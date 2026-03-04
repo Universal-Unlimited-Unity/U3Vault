@@ -34,12 +34,12 @@ class Employee(BaseModel):
     dob: date
     phone: PhoneNumber
     email: EmailStr
-    adress: str
+    address: str
     photo: str
     department: str
     start_date: date
     contract_pdf: str
-    emergency_phone: PhoneNumber
+    emergency_phone: PhoneNumber | None
     employment_type: employment_type
     contract_type: contract_type
     status: status

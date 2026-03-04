@@ -1,6 +1,6 @@
 from db.db_connect import db_connect
 from .model import Employee
-from sqlalchemy import insert, Table, Column, MetaData, String, Date
+from sqlalchemy import insert, Table, Column, MetaData, String, Date, select, delete
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -25,7 +25,7 @@ employees = Table(
     Column("department", String, nullable=False),
     Column("start_date", Date, nullable=False),
     Column("contract_pdf", String, nullable=True),
-    Column("emergency_phone", String, nullable=False),
+    Column("emergency_phone", String, nullable=True),
     Column("employment_type", String, nullable=False),
     Column("contract_type", String, nullable=False),
     Column("status", String, nullable=False),
@@ -48,7 +48,7 @@ def add(emp: Employee) -> Employee:
             dob=emp.dob,
             phone=emp.phone,
             email=emp.email,
-            address=emp.adress,
+            address=emp.address,
             photo=emp.photo,
             department=emp.department,
             start_date=emp.start_date,
@@ -61,3 +61,38 @@ def add(emp: Employee) -> Employee:
         conn.execute(stmt)
         conn.commit()
         return emp
+    
+def str_to_uuid(id: str):
+    return uuid.UUID(id)
+    
+def listall() -> dict[str, str] | int:
+    with eng.connect() as conn:
+        stmt = select(employees.c.first_name,employees.c.middle_name,employees.c.last_name,employees.c.department,employees.c.id)
+        res = conn.execute(stmt)
+        if not res:
+            return 1
+        res = res.mappings().all()
+        newhash = {}
+        for emp in res:
+            middle_name = emp["middle_name"] if emp["middle_name"] else ""
+            newhash[str(emp["id"])] = f"{emp["first_name"]} {middle_name} {emp["last_name"]} / {emp["department"]}"
+        return newhash
+
+def select_emp(id: str):
+    with eng.connect() as conn:
+        stmt = select(employees).where(employees.c.id == id)
+        result = conn.execute(stmt).fetchone()
+        return result
+        
+def delete_emp(id: str):
+    with eng.connect() as conn:
+        stmt = delete(employees).where(employees.c.id == id)
+        deleted = select_emp(id)
+        conn.execute(stmt)
+        conn.commit()
+        return deleted
+        
+        
+            
+        
+        

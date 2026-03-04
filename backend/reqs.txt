@@ -7,3 +7,4 @@ pydantic_extra_types
 phonenumbers
 psycopg
 psycopg[binary]
+typing
