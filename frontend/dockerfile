@@ -1,0 +1,5 @@
+FROM python:3.12
+WORKDIR /myapp
+COPY . .
+RUN pip install -r reqs.txt
+CMD ["streamlit", "run", "index.py", "--server.port=8501", "--server.address=0.0.0.0"]

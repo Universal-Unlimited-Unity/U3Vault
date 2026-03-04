@@ -1,5 +1,5 @@
-from backend.db_connect import db_connect
-from model import Employee
+from db.db_connect import db_connect
+from .model import Employee
 from sqlalchemy import insert, Table, Column, MetaData, String, Date
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
@@ -34,7 +34,7 @@ employees = Table(
 def init():
     metadata.create_all(eng, checkfirst=True)
 
-def add(emp: Employee):
+def add(emp: Employee) -> Employee:
     
     with eng.connect() as conn:
         stmt = insert(employees).values(

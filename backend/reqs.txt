@@ -1,0 +1,9 @@
+fastapi[standard]
+pydantic
+sqlalchemy
+dotenv
+uuid
+pydantic_extra_types
+phonenumbers
+psycopg
+psycopg[binary]
