@@ -131,40 +131,44 @@ if st.session_state.page == "Human Resources/Employees":
                     result = response.json()
                     with st.spinner("Loading Employee's infos..."):
                         st.dataframe(result)
+                        if st.button("Add New Employee"):
+                            st.rerun()
                 else:
                     st.error(f"Error: {response.status_code} - {response.text}")
             except Exception as e:
                 st.error(f"Failed to connect to backend: {e}")
+                
     with delete:
-        if "fetch" not in st.session_state:
-            st.session_state.fetch = False
-        if st.button("Fetch Employee List"):
-            st.session_state.fetch = True
-        if st.session_state.fetch:    
-            try: 
-                with st.spinner("Loading..."):
-                    result = requests.get(API_URL)
-                if result.status_code == 200:
-                    data = result.json()
-                    to_delete = st.selectbox("Select or Search Employee", options=list(data.keys()), format_func=lambda x: data[x])
-                    try:
-                        with st.spinner("Deleting"):
-                            deleted = requests.delete(f"{API_URL}/{to_delete}")
-                        if deleted.status_code == 200:
-                            st.success("Employee Deleted Successfully!")
-                            st.info("Take a Look at the Infos of the Employee You Just Deleted")
-                            result = deleted.json()
-                            st.dataframe(result)
-                            if st.button("Delete Another Employee"):
-                                st.session_state.fetch = False
+            
+        try: 
+            with st.spinner("Loading Employees's List..."):
+                result = requests.get(API_URL)
+            
+            if result.status_code == 200:
+                data = result.json()
+                to_delete = st.selectbox(
+                    "Select or Search Employee",
+                    options=list(data.keys()), 
+                    format_func=lambda x: data[x]
+                )
+                
+                if st.button("Confirm Deletion"):
+                    with st.spinner("Deleting..."):
+                        deleted = requests.delete(f"{API_URL}/{to_delete}")
+                    
+                    if deleted.status_code == 200:
+                        st.success("Employee Deleted Successfully!")
+                        st.info("Info of Deleted Employee:")
+                        st.dataframe(deleted.json())
+                        
+                        if st.button("Clear and Refresh"):
+                            st.rerun()
                                     
-                        elif deleted.status_code == 404:
-                            st.error("Error Can't Delete Employee")
-                    except Exception as e:
-                        st.error(f"Something Went Wrong in the Backend {deleted.text}")
-                            
-                elif result.status_code == 404:
-                    st.error("There No Employees To Delete, The Relational is Empty")
-                    st.info("Try Adding a New Employee First")
-            except Exception as e:
-                st.error(f"Something Went Wrong in the Backend: {e}")
+                    elif deleted.status_code == 404:
+                        st.error("Error: Could not find employee to delete.")
+                
+            elif result.status_code == 404:
+                st.warning("No employees found in the database.")
+                
+        except Exception as e:
+            st.error(f"Backend Error: {e}")

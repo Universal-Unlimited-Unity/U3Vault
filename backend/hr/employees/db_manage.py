@@ -65,11 +65,12 @@ def add(emp: Employee) -> Employee:
 def str_to_uuid(id: str):
     return uuid.UUID(id)
     
-def listall() -> dict[str, str] | int:
+def listall_selectbox() -> dict[str, str] | int:
     with eng.connect() as conn:
         stmt = select(employees.c.first_name,employees.c.middle_name,employees.c.last_name,employees.c.department,employees.c.id)
-        res = conn.execute(stmt)
-        if not res:
+        temp = res = conn.execute(stmt)
+        temp = temp.all()
+        if not temp:
             return 1
         res = res.mappings().all()
         newhash = {}
