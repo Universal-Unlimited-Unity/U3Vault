@@ -12,6 +12,7 @@ API_URL = os.getenv("API_URL")
 def save_upload(upload: UploadedFile, dir: str) -> str | None:
     if upload is None:
         return None
+    os.makedirs(dir, 777, exist_ok=True)
     ext = upload.name.split(".")[-1]
     filename = f"{uuid4()}.{ext}"
     path = os.path.join(dir, filename)
