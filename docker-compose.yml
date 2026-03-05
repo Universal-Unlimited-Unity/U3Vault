@@ -7,11 +7,19 @@ services:
       - "8000:8000"
     depends_on:
       - db
+    volumes:
+      - shared_uploads:/myapp/uploads
+    environment:
+      - UPLOADS_ROOT=/myapp/uploads
 
   frontend:
     build: ./frontend
     ports:
       - "8501:8501"
+    volumes:
+      - shared_uploads:/myapp/uploads
+    environment:
+      - UPLOADS_ROOT=/myapp/uploads
 
   db:
     image: postgres:15
@@ -22,3 +30,4 @@ services:
 
 volumes:
   db_data:
+  shared_uploads:

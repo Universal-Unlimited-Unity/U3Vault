@@ -79,6 +79,12 @@ def listall_selectbox() -> dict[str, str] | int:
             newhash[str(emp["id"])] = f"{emp["first_name"]} {middle_name} {emp["last_name"]} / {emp["department"]}"
         return newhash
 
+def listall():
+    with eng.connect() as conn:
+        stmt = select(employees)
+        res = conn.execute(stmt).fetchall()
+        return res
+
 def select_emp(id: str):
     with eng.connect() as conn:
         stmt = select(employees).where(employees.c.id == id)
