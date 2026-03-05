@@ -1,24 +1,26 @@
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 import requests
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 import os
 from uuid import uuid4
 from datetime import date
-load_dotenv()
-API_URL = os.getenv("API_URL")
+#load_dotenv()
+#API_URL = os.getenv("API_URL")
 
 
 def save_upload(upload: UploadedFile, dir: str) -> str | None:
     if upload is None:
         return None
-    os.makedirs(dir, 777, exist_ok=True)
+    root = os.getenv("UPLOADS_ROOT", "/myapp/uploads")
+    upload_dir = os.path.join(root, dir)
+    os.makedirs(upload_dir, mode=0o755, exist_ok=True)
     ext = upload.name.split(".")[-1]
     filename = f"{uuid4()}.{ext}"
-    path = os.path.join(dir, filename)
+    path = os.path.join(upload_dir, filename)
     with open(path, "wb") as f:
         f.write(upload.getbuffer())
-    return path    
+    return f"{dir}/{filename}"  
     
     
 st.set_page_config(page_icon="logoo.png", page_title="U3Vault")
@@ -74,8 +76,8 @@ if st.session_state.page == "Human Resources/Employees":
     ])
 
     with add:
-        # We need logic to maake from go off when submit is clicked later
-        with st.form("add_employee_form"):
+        # We need logic to maake form go off when submit is clicked later
+        with st.form("add_employee_form", clear_on_submit=True):
             col1, col2 = st.columns(2)
 
             with col1:
@@ -153,7 +155,7 @@ if st.session_state.page == "Human Resources/Employees":
                     format_func=lambda x: data[x]
                 )
                 
-                if st.button("Confirm Deletion"):
+                if st.button("Confirm Deletion", use_container_width=True):
                     with st.spinner("Deleting..."):
                         deleted = requests.delete(f"{API_URL}/{to_delete}")
                     
@@ -173,3 +175,16 @@ if st.session_state.page == "Human Resources/Employees":
                 
         except Exception as e:
             st.error(f"Backend Error: {e}")
+    with listall:
+        try:
+            with st.spinner("Loading Employees's Full List"):
+                
+                response = requests.get(f"{API_URL}/dataframe")
+            if response.status_code == 200:
+                result = response.json()
+                st.dataframe([result])
+            elif response.status_code == 404:
+                st.warning("No employees found in the database.")
+        except Exception as e:
+            st.error(f"Backend Error: {e}")
+        
