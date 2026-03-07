@@ -11,6 +11,13 @@ services:
       - shared_uploads:/myapp/uploads
     environment:
       - UPLOADS_ROOT=/myapp/uploads
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /myapp
+        - action: rebuild
+          path: ./backend/reqs.txt
 
   frontend:
     build: ./frontend
@@ -20,6 +27,13 @@ services:
       - shared_uploads:/myapp/uploads
     environment:
       - UPLOADS_ROOT=/myapp/uploads
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /myapp
+        - action: rebuild
+          path: ./frontend/reqs.txt
 
   db:
     image: postgres:15

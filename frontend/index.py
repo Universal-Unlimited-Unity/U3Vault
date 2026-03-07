@@ -1,13 +1,15 @@
 import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 import requests
-#from dotenv import load_dotenv
+from dotenv import load_dotenv
 import os
+import base64
 from uuid import uuid4
 from datetime import date
-#load_dotenv()
-#API_URL = os.getenv("API_URL")
+from model import Employee
 
+load_dotenv()
+API_URL = os.getenv("API_URL")
 
 def save_upload(upload: UploadedFile, dir: str) -> str | None:
     if upload is None:
@@ -22,10 +24,7 @@ def save_upload(upload: UploadedFile, dir: str) -> str | None:
         f.write(upload.getbuffer())
     return f"{dir}/{filename}"  
     
-    
 st.set_page_config(page_icon="logoo.png", page_title="U3Vault")
-
-#SideBar
 
 st.sidebar.title("Navigation")
 
@@ -62,8 +61,6 @@ with st.sidebar.expander("Administration"):
     
 with st.sidebar.expander("Settings"):
     st.button("c")
-    
-#MainPage
 
 if st.session_state.page == "Human Resources/Employees":
     col1, col2 = st.columns([1,2])
@@ -76,10 +73,8 @@ if st.session_state.page == "Human Resources/Employees":
     ])
 
     with add:
-        # We need logic to maake form go off when submit is clicked later
         with st.form("add_employee_form", clear_on_submit=True):
             col1, col2 = st.columns(2)
-
             with col1:
                 first_name = st.text_input("First Name")
                 middle_name = st.text_input("Middle Name (Optional)")
@@ -90,7 +85,6 @@ if st.session_state.page == "Human Resources/Employees":
                 email = st.text_input("Email")
                 address = st.text_area("Address")
                 photo = st.file_uploader("Upload Photo", type=["png", "jpg", "jpeg"])
-
             with col2:
                 department = st.text_input("Department")
                 role = st.text_input("Job Title / Role")
@@ -101,11 +95,10 @@ if st.session_state.page == "Human Resources/Employees":
                 contract_type = st.selectbox("Contract Type", ["Employee", "Temporary", "Intern"])
                 contract_pdf = st.file_uploader("Upload Contract PDF", type=["pdf"])
                 emergency_phone = st.text_input("Emergency Contact Phone (Optional)")
-            
             submit = st.form_submit_button("Add Employee")
 
         if submit:
-            emp = {
+            emp_payload = {
                 "first_name": first_name.title(),
                 "middle_name": middle_name.title() if middle_name else None,
                 "last_name": last_name.title(),
@@ -125,101 +118,87 @@ if st.session_state.page == "Human Resources/Employees":
                 "contract_pdf": save_upload(contract_pdf, "uploads/contracts"), 
                 "emergency_phone": emergency_phone if emergency_phone else None
             }
-            
             try:
-                response = requests.post(API_URL, json=emp)
-                
+                response = requests.post(API_URL, json=emp_payload)
                 if response.status_code == 200:
                     st.success("Employee Added Successfully!")
-                    result = response.json()
-                    with st.spinner("Loading Employee's infos..."):
-                        st.dataframe(result)
-                        if st.button("Add New Employee"):
-                            st.rerun()
-                else:
-                    st.error(f"Error: {response.status_code} - {response.text}")
+                    st.dataframe(response.json())
             except Exception as e:
-                st.error(f"Failed to connect to backend: {e}")
+                st.error(f"Error: {e}")
                 
     with delete:
-            
         try: 
-            with st.spinner("Loading Employees's List..."):
-                result = requests.get(API_URL)
-            
+            result = requests.get(API_URL)
             if result.status_code == 200:
                 data = result.json()
                 to_delete = st.selectbox(
-                    "Select or Search Employee",
+                    "Select Employee",
                     options=list(data.keys()), 
-                    format_func=lambda x: data[x]
+                    format_func=lambda x: data[x],
+                    key="del_select"
                 )
-                
-                if st.button("Confirm Deletion", use_container_width=True):
-                    with st.spinner("Deleting..."):
-                        deleted = requests.delete(f"{API_URL}/{to_delete}")
-                    
+                if st.button("Confirm Deletion", use_container_width=True, key="del_confirm"):
+                    deleted = requests.delete(f"{API_URL}/{to_delete}")
                     if deleted.status_code == 200:
                         st.success("Employee Deleted Successfully!")
                         st.info("Info of Deleted Employee:")
                         st.dataframe(deleted.json())
-                        
                         if st.button("Clear and Refresh"):
                             st.rerun()
-                                    
-                    elif deleted.status_code == 404:
-                        st.error("Error: Could not find employee to delete.")
-                
-            elif result.status_code == 404:
-                st.warning("No employees found in the database.")
-                
         except Exception as e:
-            st.error(f"Backend Error: {e}")
+            st.error(f"Error: {e}")
 
     with listall:
         try:
-            with st.spinner("Loading Employees's Full List"):
-                
-                response = requests.get(f"{API_URL}/dataframe")
+            response = requests.get(f"{API_URL}/dataframe")
             if response.status_code == 200:
-                result = response.json()
-                st.dataframe([result])
+                st.dataframe(response.json())
             elif response.status_code == 404:
                 st.warning("No employees found in the database.")
+
         except Exception as e:
-            st.error(f"Backend Error: {e}")
+            st.error(f"Error: {e}")
     
     with showprofile:
-            
         try: 
-            with st.spinner("Loading Employees's List..."):
-                result = requests.get(API_URL)
-            
+            result = requests.get(API_URL)
             if result.status_code == 200:
                 data = result.json()
                 to_show = st.selectbox(
-                    "Select or Search Employee",
+                    "Select Employee",
                     options=list(data.keys()), 
-                    format_func=lambda x: data[x]
+                    format_func=lambda x: data[x],
+                    key="prof_select"
                 )
                 
-                if st.button("Show Employee's Profil", use_container_width=True):
-                    with st.spinner("Getting Employye's Profil..."):
-                        emp = requests.get(f"{API_URL}/{to_show}")
-                    
-                    if emp.status_code == 200:
-                        
-                    
-                        if st.button("Clear and Refresh"):
+                if st.button("Show Profile", use_container_width=True, key="prof_btn"):
+                    emp_api = requests.get(f"{API_URL}/{to_show}")
+                    if emp_api.status_code == 200:
+                        root = os.getenv("UPLOADS_ROOT", "/myapp/uploads")
+                        emp = Employee(**emp_api.json())
+                        emp.photo = os.path.join(root, emp.photo)
+                        pdf_path = os.path.join(root, emp.contract_pdf)
+
+                        st.markdown("### Employee Profile")
+                        c1, c2 = st.columns([1, 3])
+                        with c1:
+                            st.image(emp.photo, use_container_width=True)
+                            st.write(f"**Status:** {emp.status.value}")
+                        with c2:
+                            st.header(f"{emp.first_name} {emp.last_name}")
+                            st.caption(f"{emp.role} | {emp.department}")
+                            st.write(f"**Email:** {emp.email}")
+                            st.write(f"**Phone:** {emp.phone}")
+                            st.divider()
+                            
+                            with open(pdf_path, "rb") as f:
+                                b64_pdf = base64.b64encode(f.read()).decode('utf-8')
+                            
+                            pdf_view = f'<iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="600" type="application/pdf"></iframe>'
+                            st.markdown(pdf_view, unsafe_allow_html=True)
+                            st.download_button("Download PDF", base64.b64decode(b64_pdf), f"contract_{emp.id}.pdf", "application/pdf", key=f"dl_{emp.id}")
+                                            
+                        if st.button("Refresh", key=f"re_{emp.id}"):
                             st.rerun()
-                                    
-                    elif emp.status_code == 404:
-                        st.error(f"Error")
-                
-            elif result.status_code == 404:
-                st.warning("No employees found in the database.")
-                
         except Exception as e:
-            st.error(f"Backend Error: {e}")
-    
-        
+            st.error(f"Error: {e}")

@@ -2,3 +2,7 @@ uuid
 streamlit
 requests
 dotenv
+pydantic
+pydantic_extra_types
+phonenumbers
+pydantic[email]

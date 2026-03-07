@@ -69,11 +69,9 @@ def str_to_uuid(id: str) -> uuid.UUID:
 def listall_selectbox() -> dict[str, str] | int:
     with eng.connect() as conn:
         stmt = select(employees.c.first_name,employees.c.middle_name,employees.c.last_name,employees.c.department,employees.c.id)
-        temp = res = conn.execute(stmt)
-        temp = temp.all()
-        if not temp:
+        res = conn.execute(stmt).mappings().all()
+        if not res:
             return 1
-        res = res.mappings().all()
         newhash = {}
         for emp in res:
             middle_name = emp["middle_name"] if emp["middle_name"] else ""

@@ -38,5 +38,3 @@ async def select_emp_api(id: Annotated[str, Path()]):
 @app.delete("/employees/{id}", response_model=Employee)
 async def delete_emp_api(id: Annotated[str, Path()]):
     return delete_emp(id)
-
-    
