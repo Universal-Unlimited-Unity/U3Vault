@@ -175,6 +175,7 @@ if st.session_state.page == "Human Resources/Employees":
                 
         except Exception as e:
             st.error(f"Backend Error: {e}")
+
     with listall:
         try:
             with st.spinner("Loading Employees's Full List"):
@@ -187,4 +188,38 @@ if st.session_state.page == "Human Resources/Employees":
                 st.warning("No employees found in the database.")
         except Exception as e:
             st.error(f"Backend Error: {e}")
+    
+    with showprofile:
+            
+        try: 
+            with st.spinner("Loading Employees's List..."):
+                result = requests.get(API_URL)
+            
+            if result.status_code == 200:
+                data = result.json()
+                to_show = st.selectbox(
+                    "Select or Search Employee",
+                    options=list(data.keys()), 
+                    format_func=lambda x: data[x]
+                )
+                
+                if st.button("Show Employee's Profil", use_container_width=True):
+                    with st.spinner("Getting Employye's Profil..."):
+                        emp = requests.get(f"{API_URL}/{to_show}")
+                    
+                    if emp.status_code == 200:
+                        
+                    
+                        if st.button("Clear and Refresh"):
+                            st.rerun()
+                                    
+                    elif emp.status_code == 404:
+                        st.error(f"Error")
+                
+            elif result.status_code == 404:
+                st.warning("No employees found in the database.")
+                
+        except Exception as e:
+            st.error(f"Backend Error: {e}")
+    
         

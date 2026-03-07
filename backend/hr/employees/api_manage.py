@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Path, Query
 from contextlib import asynccontextmanager
-from .db_manage import init, add, listall_selectbox, delete_emp, listall
+from .db_manage import init, add, listall_selectbox, delete_emp, listall, select_emp
 from .model import Employee
 from typing import Annotated
 asynccontextmanager
@@ -30,9 +30,13 @@ async def listall_api():
         raise HTTPException(statuts_code=404)
     else:
         return result
+
+@app.get("/employees/{id}", response_model=Employee)
+async def select_emp_api(id: Annotated[str, Path()]):
+    return select_emp(id)
+    
 @app.delete("/employees/{id}", response_model=Employee)
 async def delete_emp_api(id: Annotated[str, Path()]):
-    emp = delete_emp(id)
-    return emp
+    return delete_emp(id)
 
     
