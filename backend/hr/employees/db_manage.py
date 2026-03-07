@@ -3,6 +3,7 @@ from .model import Employee
 from sqlalchemy import insert, Table, Column, MetaData, String, Date, select, delete
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.engine import CursorResult
 
 eng = db_connect()
 metadata = MetaData()
@@ -31,7 +32,7 @@ employees = Table(
     Column("status", String, nullable=False),
 ) 
 
-def init():
+def init() -> None:
     metadata.create_all(eng, checkfirst=True)
 
 def add(emp: Employee) -> Employee:
@@ -62,7 +63,7 @@ def add(emp: Employee) -> Employee:
         conn.commit()
         return emp
     
-def str_to_uuid(id: str):
+def str_to_uuid(id: str) -> uuid.UUID:
     return uuid.UUID(id)
     
 def listall_selectbox() -> dict[str, str] | int:
@@ -79,19 +80,19 @@ def listall_selectbox() -> dict[str, str] | int:
             newhash[str(emp["id"])] = f"{emp["first_name"]} {middle_name} {emp["last_name"]} / {emp["department"]}"
         return newhash
 
-def listall():
+def listall() -> CursorResult:
     with eng.connect() as conn:
         stmt = select(employees)
         res = conn.execute(stmt).fetchall()
         return res
 
-def select_emp(id: str):
+def select_emp(id: str) -> CursorResult:
     with eng.connect() as conn:
         stmt = select(employees).where(employees.c.id == id)
         result = conn.execute(stmt).fetchone()
         return result
         
-def delete_emp(id: str):
+def delete_emp(id: str) -> CursorResult:
     with eng.connect() as conn:
         stmt = delete(employees).where(employees.c.id == id)
         deleted = select_emp(id)
