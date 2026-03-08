@@ -10,7 +10,8 @@ from model import Employee
 
 load_dotenv()
 API_URL = os.getenv("API_URL")
-
+API_URL_att = os.getenv("API_URL_att")
+API_URL_date = os.getenv("API_URL_date")
 def save_upload(upload: UploadedFile, dir: str) -> str | None:
     if upload is None:
         return None
@@ -210,21 +211,36 @@ if st.session_state.page == "Human Resources/Attendance":
     daily, recors, analytics = st.tabs(["Today's Attendance", "Attendance Records", "Analytics"])
 
     with daily:
-        #we need to think of how are we gonna handle the date and we still need logic in the backend for saving...
-        if "emps" not in st.session_state:
-            res = requests.get()
-            st.session_state.emps = res.json()
-        
-        emps = st.session_state.emps
-        
-        for id, info in emps.items():
-            full_name = f"{info['first_name']} {info['middle_name']} {info['last_name']}"
-            name, status = st.columns(2)
-            with name:
-                st.write(full_name)
-            with status:
-                s = st.selectbox("Status", options=["Remote", "Vacation", "Sick", "Absent", "Present"], key=id)
-                info["status"] = s
-                
-        if st.button("Submit Attendance"):
+        today = date.today().isoformat()
+        query = {"date": today}
+        date = requests.get(API_URL_date,params = query)
+        if date.status_code = 404:
+            st.warning("Attendance for today has already been recorded. To prevent fraud and ensure data integrity, the system is locked for new entries until tomorrow.")
+            if st.button("Refresh"):
+                st.rerun()
+        else:
+            if "emps" not in st.session_state:
+                res = requests.get(API_URL_att)
+                st.session_state.emps = res.json()
             
+            emps = st.session_state.emps
+            
+            for id, info in emps.items():
+                full_name = f"{info['first_name']} {info['middle_name']} {info['last_name']}"
+                name, status = st.columns(2)
+                with name:
+                    st.write(full_name)
+                with status:
+                    s = st.selectbox("Status", options=["Remote", "Vacation", "Sick", "Absent", "Present"], key=id)
+                    info["status"] = s
+                    
+            if st.button("Submit Attendance"):
+                try:
+                    res = requests.post(API_URL_att, json=list(st.session_state.emps.values()))
+                    if res.status_code == 200:
+                        st.success("Attendance recorded successfully. Your records for today have been synchronized with the system.")
+                    elif res.status_code == 404:
+                        st.error(f"Something Went: {res.tex}")
+                except Exception as e:
+                    st.error(f"Error: {e}")
+                
