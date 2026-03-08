@@ -206,3 +206,20 @@ if st.session_state.page == "Human Resources/Employees":
                 st.warning("No employees found in the database.")
         except Exception as e:
             st.error(f"Error: {e}")
+if st.session_state.page == "Human Resources/Attendance":
+    daily, recors, analytics = st.tabs(["Today's Attendance", "Attendance Records", "Analytics"])
+
+    with daily:
+        #we need to think of how are we gonna handle the date and we still need logic in the backend for saving...
+        res = requests.get()
+        emps = res.json()
+        for id, info in emps.items():
+            full_name = f"{info["first_name"] info["middle_name"] info["last_name"]}"
+            name, status = st.columns(2)
+            with name:
+                st.write(full_name)
+            with status:
+                s = st.selectbox("Status", options=["Remote", "Vacation", "Sick", "Absent", "Present"])
+                info["status"] = s
+        if st.button("Submit Attendance")
+
