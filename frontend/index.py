@@ -145,6 +145,8 @@ if st.session_state.page == "Human Resources/Employees":
                         st.dataframe(deleted.json())
                         if st.button("Clear and Refresh"):
                             st.rerun()
+            elif result.status_code == 404:
+                st.warning("No employees found in the database.")               
         except Exception as e:
             st.error(f"Error: {e}")
 
@@ -200,5 +202,7 @@ if st.session_state.page == "Human Resources/Employees":
                                             
                         if st.button("Refresh", key=f"re_{emp.id}"):
                             st.rerun()
+            elif result.status_code == 404:
+                st.warning("No employees found in the database.")
         except Exception as e:
             st.error(f"Error: {e}")

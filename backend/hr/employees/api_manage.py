@@ -27,7 +27,7 @@ async def listall_selectbox_api():
 async def listall_api():
     result = listall()
     if not result:
-        raise HTTPException(statuts_code=404)
+        raise HTTPException(status_code=404)
     else:
         return result
 
