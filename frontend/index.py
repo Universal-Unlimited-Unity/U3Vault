@@ -211,15 +211,20 @@ if st.session_state.page == "Human Resources/Attendance":
 
     with daily:
         #we need to think of how are we gonna handle the date and we still need logic in the backend for saving...
-        res = requests.get()
-        emps = res.json()
+        if "emps" not in st.session_state:
+            res = requests.get()
+            st.session_state.emps = res.json()
+        
+        emps = st.session_state.emps
+        
         for id, info in emps.items():
-            full_name = f"{info["first_name"] info["middle_name"] info["last_name"]}"
+            full_name = f"{info['first_name']} {info['middle_name']} {info['last_name']}"
             name, status = st.columns(2)
             with name:
                 st.write(full_name)
             with status:
-                s = st.selectbox("Status", options=["Remote", "Vacation", "Sick", "Absent", "Present"])
+                s = st.selectbox("Status", options=["Remote", "Vacation", "Sick", "Absent", "Present"], key=id)
                 info["status"] = s
-        if st.button("Submit Attendance")
-
+                
+        if st.button("Submit Attendance"):
+            
