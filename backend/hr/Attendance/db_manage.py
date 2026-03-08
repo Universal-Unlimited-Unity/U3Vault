@@ -1,6 +1,6 @@
 from sqlalchemy import MetaData, Table, Column, ForeignKey, String, Date, select, insert
 from db.db_connect import db_connect
-
+from datetime import date
 eng = db_connect()
 
 metadata = MetaData()
@@ -21,7 +21,7 @@ def init() -> None:
 
 def emp_attendance_dict():
     with eng.connect() as conn:
-        emps = select(employees).mappings().all()
+        emps = select(employees).mappings().fetchall()
         if not emps:
             return 1
         newhash = {}
@@ -34,6 +34,9 @@ def insert(att: list[dict[str, str]]):
     with eng.connect() as conn:
         conn.execute(insert(attendance), att)
         conn.commit()
-    
-    
+
+def check_date(att_date: date):
+    stmt = select(attendance).where(attendance.c.date == att_date)
+    res = conn.execute(stmt).fetchone()
+    return res
                                      
