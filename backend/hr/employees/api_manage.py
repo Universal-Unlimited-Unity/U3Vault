@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from .db_manage import init, add, listall_selectbox, delete_emp, listall, select_emp
 from .model import Employee
 from typing import Annotated
-asynccontextmanager
+@asynccontextmanager
 async def lifespan(app: FastAPI):
     init()
     print("Employee Table Created!")
