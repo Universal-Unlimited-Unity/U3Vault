@@ -213,15 +213,18 @@ if st.session_state.page == "Human Resources/Attendance":
     with daily:
         today = date.today().isoformat()
         query = {"date": today}
-        date = requests.get(API_URL_date,params = query)
+        with st.spinner("Verifying..."):
+            date = requests.get(API_URL_date,params = query)
         if date.status_code = 404:
             st.warning("Attendance for today has already been recorded. To prevent fraud and ensure data integrity, the system is locked for new entries until tomorrow.")
             if st.button("Refresh"):
                 st.rerun()
         else:
+            st.info(f"Recording attendance for {today}")
             if "emps" not in st.session_state:
-                res = requests.get(API_URL_att)
-                st.session_state.emps = res.json()
+                with st.spinner("Loading..."):
+                    res = requests.get(API_URL_att)
+                    st.session_state.emps = res.json()
             
             emps = st.session_state.emps
             
