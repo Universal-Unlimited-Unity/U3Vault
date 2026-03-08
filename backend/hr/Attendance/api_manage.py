@@ -1,6 +1,8 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Path
 from contextlib import asynccontextmanager
-from .db_manage import init, emp_attendance_dict
+from .db_manage import init, emp_attendance_dict, insert
+from typing import Annotated
+from .model.py import attendance
 @asynccontextmanager
 async def lifespan(app: FastAPI):
   init()
@@ -15,4 +17,9 @@ async def for_emp_attendance()
   if res = 1:
     raise HTTPException(status_code=404)
   return res
+
+@app.post("/attendance")
+async def insert_api(att: Annotated[list[attendance], Path()]):
+  att = [i.model_dump() for i in att]
+  insert(att)
     
