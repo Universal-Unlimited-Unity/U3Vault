@@ -30,7 +30,7 @@ def emp_attendance_dict():
             newhash[str(i["id"])] = {"id": i["id"], "first_name": i["first_name"], "middle_name": middle_name, "last_name": i["last_name"], "status":""}
         return newhash
         
-def insert(att: list[dic[str, str]]):
+def insert(att: list[dict[str, str]]):
     with eng.connect() as conn:
         conn.execute(insert(attendance), att)
         conn.commit()
