@@ -1,4 +1,4 @@
-from sqlalchemy import MetaData, Table, Column, ForeignKey, String, Date, select
+from sqlalchemy import MetaData, Table, Column, ForeignKey, String, Date, select, insert
 from db.db_connect import db_connect
 
 eng = db_connect()
@@ -27,6 +27,13 @@ def emp_attendance_dict():
         newhash = {}
         for i in emps:
             middle_name = i["middle_name"] if emp["middle_name"] else ""
-            newhash[str(i["id"])] = {"id": i["id], first_name": i["first_name"], "middle_name": middle_name, "last_name": i["last_name], "status":""}
+            newhash[str(i["id"])] = {"id": i["id"], "first_name": i["first_name"], "middle_name": middle_name, "last_name": i["last_name"], "status":""}
         return newhash
         
+def insert(att: list[dic[str, str]]):
+    with eng.connect() as conn:
+        conn.execute(insert(attendance), att)
+        conn.commit()
+    
+    
+                                     
