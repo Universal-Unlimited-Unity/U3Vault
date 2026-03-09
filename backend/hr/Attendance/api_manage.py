@@ -28,5 +28,5 @@ async def insert_api(att: Annotated[list[Attendance], Path()]):
 async def check_date_api(date: datetime.date):
   res = check_date(date)
   if res:
-    raise HTTPException(status_code=404)
+    raise HTTPException(status_code=409)
     
