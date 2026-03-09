@@ -14,5 +14,5 @@ class Attendance(BaseModel):
     first_name: str
     middle_name: str
     last_name: str
-    data: date
+    date: date
     status: Status

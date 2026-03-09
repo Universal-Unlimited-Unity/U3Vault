@@ -22,16 +22,17 @@ def init() -> None:
 
 def emp_attendance_dict():
     with eng.connect() as conn:
-        emps = select(employees).mappings().fetchall()
+        stmt = select(employees)
+        emps = conn.execute(stmt).mappings().fetchall()
         if not emps:
             return 1
         newhash = {}
         for i in emps:
             middle_name = i["middle_name"] if i["middle_name"] else ""
-            newhash[str(i["id"])] = {"id": str(i["id"]), "first_name": i["first_name"], "middle_name": middle_name, "last_name": i["last_name"], "status":""}
+            newhash[str(i["id"])] = {"id": str(i["id"]), "first_name": i["first_name"], "middle_name": middle_name, "last_name": i["last_name"], "status":"", "date": ""}
         return newhash
         
-def insert(att: list[dict[str, str]]):
+def insert_att(att: list[dict[str, str]]):
     with eng.connect() as conn:
         conn.execute(insert(attendance), att)
         conn.commit()

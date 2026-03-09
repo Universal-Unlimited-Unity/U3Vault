@@ -1,6 +1,6 @@
-from fastapi import FastAPI, HTTPException, Path, Query
+from fastapi import FastAPI, HTTPException, Path, Query, Body
 from contextlib import asynccontextmanager
-from .db_manage import init, emp_attendance_dict, insert, check_date
+from .db_manage import init, emp_attendance_dict, insert_att, check_date
 from typing import Annotated
 from .model import Attendance
 import datetime
@@ -12,7 +12,7 @@ async def lifespan(app: FastAPI):
   print("Shutting Down...")
   
 app = FastAPI(lifespan = lifespan)
-@app.get("/attendace")
+@app.get("/attendance")
 async def for_emp_attendance():
   res = emp_attendance_dict()
   if res == 1:
@@ -20,9 +20,9 @@ async def for_emp_attendance():
   return res
 
 @app.post("/attendance")
-async def insert_api(att: Annotated[list[Attendance], Path()]):
+async def insert_api(att: Annotated[list[Attendance], Body()]):
   att = [i.model_dump() for i in att]
-  insert(att)
+  insert_att(att)
 
 @app.get("/date")
 async def check_date_api(date: datetime.date):
