@@ -229,7 +229,7 @@ if st.session_state.page == "Human Resources/Attendance":
                 st.rerun()
         else:
             st.session_state.check = True
-        if st.seesion_state.check:
+        if st.session_state.check:
             st.info(f"Recording attendance for {today}")
             with st.spinner("Loading..."):
                 res = requests.get(API_URL_att)
