@@ -208,7 +208,7 @@ if st.session_state.page == "Human Resources/Employees":
         except Exception as e:
             st.error(f"Error: {e}")
 if st.session_state.page == "Human Resources/Attendance":
-    
+    # we need to really understand this code and anlyze it and we need sucess logic to work
     if "case" not in st.session_state:
         st.session_state.case = False
     if "emps" not in st.session_state:
