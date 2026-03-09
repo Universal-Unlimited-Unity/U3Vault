@@ -37,7 +37,8 @@ def insert(att: list[dict[str, str]]):
         conn.commit()
 
 def check_date(att_date: date):
-    stmt = select(attendance).where(attendance.c.date == att_date)
-    res = conn.execute(stmt).fetchone()
-    return res
+    with eng.connect() as conn:
+        stmt = select(attendance).where(attendance.c.date == att_date)
+        res = conn.execute(stmt).fetchone()
+        return res
                                      
