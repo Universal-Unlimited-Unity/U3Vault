@@ -208,13 +208,19 @@ if st.session_state.page == "Human Resources/Employees":
         except Exception as e:
             st.error(f"Error: {e}")
 if st.session_state.page == "Human Resources/Attendance":
+    # Initialize here FIRST
+    if "case" not in st.session_state:
+        st.session_state.case = False
+    if "emps" not in st.session_state:
+        st.session_state.emps = {}
+    
     daily, recors, analytics = st.tabs(["Today's Attendance", "Attendance Records", "Analytics"])
 
     with daily:
         today = date.today().isoformat()
         query = {"date": today}
         with st.spinner("Verifying..."):
-            check = requests.get(API_URL_date,params=query)
+            check = requests.get(API_URL_date, params=query)
         if check.status_code == 409:
             st.warning("Attendance for today has already been recorded. To prevent fraud and ensure data integrity, the system is locked for new entries until tomorrow.")
             if st.button("Refresh"):
@@ -224,26 +230,31 @@ if st.session_state.page == "Human Resources/Attendance":
             if "emps" not in st.session_state:
                 with st.spinner("Loading..."):
                     res = requests.get(API_URL_att)
-                    st.session_state.emps = res.json()
+                    if res.status_code == 404:
+                        st.error("The DataBase is Empty!")
+                        st.session_state.case = False
+                    else:
+                        st.session_state.emps = res.json()
+                        st.session_state.case = True
             
-            emps = st.session_state.emps
-            
-            for id, info in emps.items():
-                full_name = f"{info['first_name']} {info['middle_name']} {info['last_name']}"
-                name, status = st.columns(2)
-                with name:
-                    st.write(full_name)
-                with status:
-                    s = st.selectbox("Status", options=["Remote", "Vacation", "Sick", "Absent", "Present"], key=id)
-                    info["status"] = s
-                    
-            if st.button("Submit Attendance"):
-                try:
-                    res = requests.post(API_URL_att, json=list(st.session_state.emps.values()))
-                    if res.status_code == 200:
-                        st.success("Attendance recorded successfully. Your records for today have been synchronized with the system.")
-                    elif res.status_code == 404:
-                        st.error(f"Something Went: {res.tex}")
-                except Exception as e:
-                    st.error(f"Error: {e}")
+            if st.session_state.case:
+                emps = st.session_state.emps
                 
+                for id, info in emps.items():
+                    full_name = f"{info['first_name']} {info['middle_name']} {info['last_name']}"
+                    name, status = st.columns(2)
+                    with name:
+                        st.write(full_name)
+                    with status:
+                        s = st.selectbox("Status", options=["Remote", "Vacation", "Sick", "Absent", "Present"], key=id)
+                        info["status"] = s
+                
+                if st.button("Submit Attendance"):
+                    try:
+                        res = requests.post(API_URL_att, json=list(st.session_state.emps.values()))
+                        if res.status_code == 200:
+                            st.success("Attendance recorded successfully. Your records for today have been synchronized with the system.")
+                        elif res.status_code == 404:
+                            st.error(f"Something Went: {res.text}")
+                    except Exception as e:
+                        st.error(f"Error: {e}")

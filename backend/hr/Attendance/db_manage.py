@@ -28,7 +28,7 @@ def emp_attendance_dict():
         newhash = {}
         for i in emps:
             middle_name = i["middle_name"] if i["middle_name"] else ""
-            newhash[str(i["id"])] = {"id": i["id"], "first_name": i["first_name"], "middle_name": middle_name, "last_name": i["last_name"], "status":""}
+            newhash[str(i["id"])] = {"id": str(i["id"]), "first_name": i["first_name"], "middle_name": middle_name, "last_name": i["last_name"], "status":""}
         return newhash
         
 def insert(att: list[dict[str, str]]):
