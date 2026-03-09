@@ -215,7 +215,7 @@ if st.session_state.page == "Human Resources/Attendance":
         query = {"date": today}
         with st.spinner("Verifying..."):
             date = requests.get(API_URL_date,params = query)
-        if date.status_code = 404:
+        if date.status_code == 404:
             st.warning("Attendance for today has already been recorded. To prevent fraud and ensure data integrity, the system is locked for new entries until tomorrow.")
             if st.button("Refresh"):
                 st.rerun()

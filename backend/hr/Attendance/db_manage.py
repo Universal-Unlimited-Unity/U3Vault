@@ -1,23 +1,23 @@
 from sqlalchemy import MetaData, Table, Column, ForeignKey, String, Date, select, insert
 from db.db_connect import db_connect
 from datetime import date
+from sqlalchemy.dialects.postgresql import UUID
 eng = db_connect()
 
 metadata = MetaData()
 Attendance = Table(
     "Attendance",
     metadata,
-    Column("id", UUID(as_uuid=True), ForeignKey("employees.id", ondelete="SET NULL"),
-           nullable=True),
+    Column("id", UUID(as_uuid=True), nullable=True),
     Column("first_name", String, nullable=False),
     Column("middle_name", String, nullable=True),
     Column("last_name", String, nullable=False),
-    Column("date", Date, nullable=False)
+    Column("date", Date, nullable=False),
     Column("status", String, nullable=False)
 )
 
 def init() -> None:
-    metadata.create_all(eng, ckeckfirst=True)
+    metadata.create_all(eng, checkfirst=True)
 
 def emp_attendance_dict():
     with eng.connect() as conn:
