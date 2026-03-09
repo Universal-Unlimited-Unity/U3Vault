@@ -2,11 +2,12 @@ from sqlalchemy import MetaData, Table, Column, ForeignKey, String, Date, select
 from db.db_connect import db_connect
 from datetime import date
 from sqlalchemy.dialects.postgresql import UUID
+from hr.employees.db_manage import employees
 eng = db_connect()
 
 metadata = MetaData()
-Attendance = Table(
-    "Attendance",
+attendance = Table(
+    "attendance",
     metadata,
     Column("id", UUID(as_uuid=True), nullable=True),
     Column("first_name", String, nullable=False),
