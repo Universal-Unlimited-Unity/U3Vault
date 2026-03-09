@@ -208,11 +208,13 @@ if st.session_state.page == "Human Resources/Employees":
         except Exception as e:
             st.error(f"Error: {e}")
 if st.session_state.page == "Human Resources/Attendance":
-    # Initialize here FIRST
+
     if "case" not in st.session_state:
         st.session_state.case = False
     if "emps" not in st.session_state:
         st.session_state.emps = {}
+    if "check" not in st.session_state:
+        st.session_state.emps = False
     
     daily, recors, analytics = st.tabs(["Today's Attendance", "Attendance Records", "Analytics"])
 
@@ -226,21 +228,19 @@ if st.session_state.page == "Human Resources/Attendance":
             if st.button("Refresh"):
                 st.rerun()
         else:
+            st.session_state.check = True
+        if st.seesion_state.check:
             st.info(f"Recording attendance for {today}")
-            if "emps" not in st.session_state:
-                with st.spinner("Loading..."):
-                    res = requests.get(API_URL_att)
-                    if res.status_code == 404:
-                        st.error("The DataBase is Empty!")
-                        st.session_state.case = False
+            with st.spinner("Loading..."):
+                res = requests.get(API_URL_att)
+                if res.status_code == 404:
+                    st.error("The DataBase is Empty!")
                     else:
                         st.session_state.emps = res.json()
                         st.session_state.case = True
             
-            if st.session_state.case:
-                emps = st.session_state.emps
-                
-                for id, info in emps.items():
+            if st.session_state.case:                
+                for id, info in st.session_state.emps.items():
                     full_name = f"{info['first_name']} {info['middle_name']} {info['last_name']}"
                     name, status = st.columns(2)
                     with name:
