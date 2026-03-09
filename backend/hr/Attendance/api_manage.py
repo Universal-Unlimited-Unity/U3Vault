@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Path, Query
+from fastapi import FastAPI, HTTPException, Path, Query, Body
 from contextlib import asynccontextmanager
 from .db_manage import init, emp_attendance_dict, insert, check_date
 from typing import Annotated
@@ -20,7 +20,7 @@ async def for_emp_attendance():
   return res
 
 @app.post("/attendance")
-async def insert_api(att: Annotated[list[Attendance], Path()]):
+async def insert_api(att: Annotated[list[Attendance], Body()]):
   att = [i.model_dump() for i in att]
   insert(att)
 
