@@ -3,6 +3,13 @@ from db.db_connect import db_connect
 from datetime import date
 from sqlalchemy.dialects.postgresql import UUID
 from hr.employees.db_manage import employees
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from io import BytesIO
+import tempfile
+import os
+from fpdf import FPDF
 eng = db_connect()
 
 metadata = MetaData()
@@ -42,4 +49,116 @@ def check_date(att_date: date):
         stmt = select(attendance).where(attendance.c.date == att_date)
         res = conn.execute(stmt).fetchone()
         return res
-                                     
+
+def att_dataframe_all():
+    df = pd.read_sql_table("attendance", eng)
+    df["date"] = pd.to_datetime(df["date"])
+    return df
+
+def att_dataframe_one(id: str):
+    df = att_dataframe_all()
+    df = df[df["id"] == id]
+    return df
+def timeperiod(df: pd.DataFrame, start: str, end: str):
+    if start and end:
+        start = pd.to_datetime(start)
+        end = pd.to_datetime(end)
+        df = df[df["date"] >= start]
+        df = df[df["date"] <= end]
+    return df
+def att_global_analytics(start: str=None, end: str=None):
+    df = att_dataframe_all()
+    df = timeperiod(df, start, end)
+    df = (df["status"].value_counts(normalize=True)*100).reset_index(name="Percentage")
+    df = df.rename(columns={"status": "Status"})
+    return df
+
+def att_one_analytics(id: str, start=None, end=None):
+    df = att_dataframe_one(id)
+    df = timeperiod(df, start, end)
+    df = (df["status"].value_counts(normalize=True)*100).reset_index(name="Percentage")
+    df = df.rename(columns={"status": "Status"})
+    return df
+
+def _help_plot_status_trend_global(start: str, end: str):
+    df = att_dataframe_all()
+    df = timeperiod(df, start, end)
+    df = (df.groupby("date")["Status"].value_counts(normalize=True)*100).reset_index(name="Percentage")
+    return df
+def plot_status_trend_global(status: str, start: str = None, end : str = None):
+    df = _help_plot_status_trend(start, end)
+    df["date"] = pd.to_datetime(df["date"])
+    fig, ax = plt.subplots()
+    vf = BytesIO()
+    if status.lower() != 'all':
+        df = df[df["Status"] == status.lower()]
+        fig, ax = plt.subplots()
+        sns.lineplot(data=df, x='date', y="Percentage", ax=ax)
+        plt.savefig(vf, format="png")
+        plt.close(fig)
+        vf.seek(0)
+    else:
+        sns.lineplot(data=df, x='date', y='Percentage', hue='Status', ax = ax)
+        plt.savefig(vf, format="png")
+        plt.close(fig)
+        vf.seek(0)
+    return vf.read()
+    
+# Two functions below are ai generated since i don't know how to work with fpdf    
+# these functions dont knw bout timepreiod !
+def generate_single_employee_report(emp_name, emp_id, df):
+
+    pdf = FPDF()
+    pdf.add_page()
+
+    pdf.set_font("Arial", "B", 18)
+    pdf.cell(0, 10, f"Attendance Report For Employee: {employee_name}", ln=True, align="C")
+    pdf.ln(5)
+
+    pdf.set_font("Arial", "", 12)
+    pdf.cell(0, 10, f"Employee ID: {employee_id}", ln=True)
+    pdf.ln(5)
+
+    pdf.set_font("Arial", "B", 11)
+    for col in df.columns:
+        pdf.cell(40, 8, str(col), border=1)
+    pdf.ln()
+
+    pdf.set_font("Arial", "", 11)
+    for _, row in df.iterrows():
+        for val in row:
+            pdf.cell(40, 8, str(val), border=1)
+        pdf.ln()
+
+    return bytes(pdf.output())
+
+def generate_all_employees_report(df, plot):
+
+    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+    tmp.write(plot_bytes)   
+    tmp.flush()           
+
+    pdf = FPDF()
+    pdf.add_page()
+
+    pdf.set_font("Arial", "B", 18)
+    pdf.cell(0, 10, "Report For All Employees Attendance", ln=True, align="C")
+    pdf.ln(5)
+
+    pdf.set_font("Arial", "B", 11)
+    for col in df.columns:
+        pdf.cell(40, 8, str(col), border=1)
+    pdf.ln()
+
+    pdf.set_font("Arial", "", 11)
+    for _, row in df.iterrows():
+        for val in row:
+            pdf.cell(40, 8, str(val), border=1)
+        pdf.ln()
+
+    pdf.ln(5)
+
+    pdf.image(tmp.name, x=10, w=190)
+    os.remove(tmp.name)
+
+    return bytes(pdf.output())
