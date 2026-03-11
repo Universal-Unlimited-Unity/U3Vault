@@ -104,19 +104,20 @@ def plot_status_trend_global(status: str, start: str = None, end : str = None):
         vf.seek(0)
     return vf.read()
     
-# Two functions below are ai generated since i don't know how to work with fpdf    
-# these functions dont knw bout timepreiod !
-def generate_single_employee_report(emp_name, emp_id, df):
+# Two functions below are ai generated since i don't know how to work with fpdf  
+
+def generate_single_employee_report(emp_name, emp_id, df, start, end):
 
     pdf = FPDF()
     pdf.add_page()
 
     pdf.set_font("Arial", "B", 18)
-    pdf.cell(0, 10, f"Attendance Report For Employee: {employee_name}", ln=True, align="C")
+    pdf.cell(0, 10, f"Attendance Report For Employee: {emp_name}", ln=True, align="C")
     pdf.ln(5)
 
     pdf.set_font("Arial", "", 12)
-    pdf.cell(0, 10, f"Employee ID: {employee_id}", ln=True)
+    pdf.cell(0, 10, f"Employee ID: {emp_id}", ln=True)
+    pdf.cell(0, 10, f"Period: {start} to {end}", ln=True)
     pdf.ln(5)
 
     pdf.set_font("Arial", "B", 11)
@@ -132,17 +133,22 @@ def generate_single_employee_report(emp_name, emp_id, df):
 
     return bytes(pdf.output())
 
-def generate_all_employees_report(df, plot):
+
+def generate_all_employees_report(df, plot, start, end):
 
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
-    tmp.write(plot_bytes)   
-    tmp.flush()           
+    tmp.write(plot)
+    tmp.flush()
 
     pdf = FPDF()
     pdf.add_page()
 
     pdf.set_font("Arial", "B", 18)
     pdf.cell(0, 10, "Report For All Employees Attendance", ln=True, align="C")
+    pdf.ln(5)
+
+    pdf.set_font("Arial", "", 12)
+    pdf.cell(0, 10, f"Period: {start} to {end}", ln=True)
     pdf.ln(5)
 
     pdf.set_font("Arial", "B", 11)
