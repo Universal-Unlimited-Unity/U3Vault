@@ -50,7 +50,7 @@ def check_date(att_date: date):
         res = conn.execute(stmt).fetchone()
         return res
 
-def att_dataframe_all():
+def att_dataframe_all()
     df = pd.read_sql_table("attendance", eng)
     df["date"] = pd.to_datetime(df["date"])
     return df
@@ -59,6 +59,19 @@ def att_dataframe_one(id: str):
     df = att_dataframe_all()
     df = df[df["id"] == id]
     return df
+
+def record_all(start: str = None, end: str = None):
+    df = att_dataframe_all()
+    if start and end:
+        df = timeperiod(df, start, end)
+    return df
+    
+def record_one(id: str, start: str = None, end: str = None):
+    df = att_dataframe_one(id)
+    if start and end:
+        df = timeperiod(df, start, end)
+    return df
+    
 def timeperiod(df: pd.DataFrame, start: str, end: str):
     if start and end:
         start = pd.to_datetime(start)
