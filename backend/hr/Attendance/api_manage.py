@@ -34,28 +34,28 @@ async def check_date_api(date: Annotated[datetime.date, Query()]:
 async def att_record(start: Annotated[str | None, Query()], end: Annotated[str | None, Query()]):
   df = record_all(start, end)
   if df.empty:
-    raise HTTPException(status_code=400, detail="No Result For this period of time")
+    raise HTTPException(status_code=404, detail="No Result For this period of time")
   return df.to_dict(orient="records")
 
 @app.get("/attendance/records/{id}")
 async def att_record(id: Annotated[str, Path()], start: Annotated[str | None, Query()], end: Annotated[str | None, Query()]):
   df = record_one(id, start, end)
   if df.empty:
-    raise HTTPException(status_code=400, detail="No Result For this period of time")
+    raise HTTPException(status_code=404, detail="No Result For this period of time")
   return df.to_dict(orient="records")
 
 @app.get("/attendance/analytics")
 async def att_analytics(start: Annotated[str | None, Query()], end: Annotated[str | None, Query()]):
   df = att_global_analytics(start, end)
   if df.empty:
-    raise HTTPException(status_code=400, detail="No Result For this period of time")
+    raise HTTPException(status_code=404, detail="No Result For this period of time")
   return df.to_dict(orient="records")
 
 @app.get("/attendance/analytics/{id}")
 async def att_analytics(id: Annotated[str, Path()], start: Annotated[str | None, Query()], end: Annotated[str | None, Query()]):
   df = att_one_analytics(id, start, end)
   if df.empty:
-    raise HTTPException(status_code=400, detail="No Result For this period of time")
+    raise HTTPException(status_code=404, detail="No Result For this period of time")
   return df.to_dict(orient="records")
 
 @app.get("/attendance/analytics/plots")
@@ -66,10 +66,14 @@ async def att_plots(status: Annotated[str, Query()], start: Annotated[str | None
 @app.get("/attendance/analytics/reports")
 async def att_report(status: Annotated[str, Query()], start: Annotated[str | None, Query()], end: Annotated[str | None, Query()]):
   df = att_global_analytics(start, end)
+  if df.empty:
+    raise HTTPException(status_code=404, detail="No Result For this period of time")
   vf = plot_status_trend_global(status, start, end)
   return generate_all_employees_report(df, vf, start, end)
 
 @app.get("/attendance/analytics/reports/{id}")
 async def att_report(full_name: Annotated[str, Query()], id: Annotated[str, Path()], status: Annotated[str, Query()], start: Annotated[str | None, Query()], end: Annotated[str | None, Query()]):
   df = att_one_analytics(id, start, end)
+  if df.empty:
+    raise HTTPException(status_code=404, detail="No Result For this period of time")
   return generate_single_employee_report(full_name, id, df, start, end)
