@@ -216,7 +216,7 @@ if st.session_state.page == "Human Resources/Attendance":
     if "check" not in st.session_state:
         st.session_state.check = False
     
-    daily, recors, analytics = st.tabs(["Today's Attendance", "Attendance Records", "Analytics"])
+    daily, records, analytics = st.tabs(["Today's Attendance", "Attendance Records", "Analytics"])
 
     with daily:
         today = date.today().isoformat()
