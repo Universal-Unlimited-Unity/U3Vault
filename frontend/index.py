@@ -341,3 +341,120 @@ if st.session_state.page == "Human Resources/Attendance":
                     st.warning("No Records For This Time Period")
                 if st.button("Refresh", key="refresh"):
                     st.rerun()
+    with analytics:
+        radio = st.radio("View Scope", options=["Single Employee", "All Employees"], horizontal=True)
+        if radio == "Single Employee":
+            if "start" not in st.session_state:
+                st.session_state.end = None
+            if "end" not in st.session_state:
+                st.session_state.end = None
+            if "id" not in st.session_state:
+                st.session_state.id = None
+            if "data" not in st.session_state:
+                st.session_state.data = None                
+            try: 
+                result = requests.get(API_URL)
+                if result.status_code == 200:
+                    st.session_state.data = result.json()
+                    st.session_state.id = st.selectbox(
+                        "Select Employee",
+                        options=list(data.keys()), 
+                        format_func=lambda x: data[x],
+                        key="record_select"
+                    )
+                    col1, col2 = st.columns(2)
+                    st.markdown("Enter Start and End Date of the Records, To Show All Time Records Leave Them Empty")
+                    st.markdown("This is an MVP, If You Enter One and Leave Another Empty The Result Would Be All The Time")
+                    with col1:
+                        st.session_state.start = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="start")
+                    with col2:
+                        st.session_state.end = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="end")
+                    if st.button("Show Analytics"):
+                        if st.session_state.start and st.session_state.end:
+                            payload = {"start": str(st.session_state.start), "end": str(st.session_state.end)}
+                            try:
+                                record = requests.get(f"{API_URL_att}/analytics/{st.session_state.id}", params=payload)
+                            except Exception as e:
+                                st.error(f"Error: {e}")
+                        else:
+                            try:
+                                record = requests.get(f"{API_URL_att}/analytics/{st.session_state.id}")
+                            except Exception as e:
+                                st.error(f"Error: {e}")
+                        if record.status_code == 200:
+                            pre_df = record.json()
+                            st.dataframe(pre_df)
+                            if st.button("Generate Report As PDF"):
+                                if st.session_state.start and st.session_state.end:
+                                    full_name = f"{st.session_state[st.session_state.id]["full_name"]}{st.session_state[st.session_state.id]["middle_name"]}{st.session_state[st.session_state.id]["last_name"]}"
+                                    payload = {"full_name": full_name, "start": str(st.session_state.start), "end": str(st.session_state.end}}
+                                    try:
+                                        report = requests.get(f"{API_URL_att}/analytics/reports/{st.session_state.id}", params=payload)
+                                    except Exception as e:
+                                        st.error(f"Error: {e}")
+                                else:
+                                    full_name = f"{st.session_state[st.session_state.id]["full_name"]}{st.session_state[st.session_state.id]["middle_name"]}{st.session_state[st.session_state.id]["last_name"]}"
+                                    payload = {"full_name": full_name}
+                                    try:
+                                        report = requests.get(f"{API_URL_att}/analytics/reports/{st.session_state.id}", params=payload)
+                                    except Exception as e:
+                                        st.error(f"Error: {e}")
+                                        
+                                if report.status_code == 200:
+                                    b64_report = base64.b64encode(report).decode("utf-8")
+    
+                                    st.markdown(
+                                        f"""
+                                        <iframe
+                                            src="data:application/pdf;base64,{b64_report}"
+                                            width="700"
+                                            height="900"
+                                            type="application/pdf">
+                                        </iframe>
+                                        """,
+                                        unsafe_allow_html=True,
+                                    )
+                                    st.download_button(
+                                                        label="Download employee report (PDF)",
+                                                        data=pdf_bytes,
+                                                        file_name=f"attendance_{id}_{st.session_state}_{st.session_state.end}.pdf",
+                                                        mime="application/pdf"
+                                                    )
+                                
+                                elif repor.status_code == 404:
+                                    st.error("Something Went Wrong...")
+                        elif record.status_code == 404:
+                            st.warning("No Records For This Employee In This Time Period")
+        
+                        if st.button("Refresh", key="refresh"):
+                            st.rerun()
+            except Exception as e:
+                st.error(f"Error: {e}")
+        if radio == "All Employees":
+            
+            col1, col2 = st.columns(2)
+            st.markdown("Enter Start and End Date of the Records, To Show All Time Records Leave Them Empty")
+            st.markdown("This is an MVP, If You Enter One and Leave Another Empty The Result Would Be All The Time")
+            with col1:
+                start = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="start")
+            with col2:
+                end = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="end")
+            if st.button("Show Ana"):
+                if start and end:
+                    payload = {"start": str(start), "end": str(end)}
+                    try:
+                        record = requests.get(f"{API_URL_att}/records", params=payload)
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+                else:
+                    try:
+                        record = requests.get(f"{API_URL_att}/records")
+                    except Exception as e:
+                        st.error(f"Error: {e}")
+                if record.status_code == 200:
+                    pre_df = record.json()
+                    st.dataframe(pre_df)
+                elif record.status_code == 404:
+                    st.warning("No Records For This Time Period")
+                if st.button("Refresh", key="refresh"):
+                    st.rerun()
