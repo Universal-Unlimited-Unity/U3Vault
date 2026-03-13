@@ -74,7 +74,7 @@ async def att_report(status: Annotated[str, Query()], start: Annotated[str | Non
   return generate_all_employees_report(df, vf, start, end)
 
 @app.get("/attendance/analytics/reports/{id}")
-async def att_report(full_name: Annotated[str, Query()], id: Annotated[str, Path()], status: Annotated[str, Query()], start: Annotated[str | None, Query()], end: Annotated[str | None, Query()]):
+async def att_report(full_name: Annotated[str, Query()], id: Annotated[str, Path()], start: Annotated[str | None, Query()] = None, end: Annotated[str | None, Query()] = None):
   df = att_one_analytics(id, start, end)
   if df.empty:
     raise HTTPException(status_code=404, detail="No Result For this period of time")
