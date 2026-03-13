@@ -3,6 +3,7 @@ version: "3.9"
 services:
   backend:
     build: ./backend
+    command: ["bash", "./run_apis.sh"]
     ports: 
       - "8000:8000"
       - "8001:8001"
@@ -24,6 +25,8 @@ services:
     build: ./frontend
     ports:
       - "8501:8501"
+    depends_on:
+      - backend
     volumes:
       - shared_uploads:/myapp/uploads
     environment:

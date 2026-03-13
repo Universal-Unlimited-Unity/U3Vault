@@ -222,23 +222,28 @@ if st.session_state.page == "Human Resources/Attendance":
         today = date.today().isoformat()
         query = {"date": today}
         
-        check = requests.get(API_URL_date, params=query)
-        
-        if check.status_code == 409:
-            st.warning("Attendance for today has already been recorded. To prevent fraud and ensure data integrity, the system is locked for new entries until tomorrow.")
-            if st.button("Refresh"):
-                st.rerun()
-        else: 
-            st.session_state.check = True
+        try:
+            check = requests.get(API_URL_date, params=query)
+            if check.status_code == 409:
+                st.warning("Attendance for today has already been recorded. To prevent fraud and ensure data integrity, the system is locked for new entries until tomorrow.")
+                if st.button("Refresh"):
+                    st.rerun()
+            elif check.status_code == 200:
+                st.session_state.check = True
+        except Exception as e:
+            st.error(f"Backend unavailable: {e}")
         
         if st.session_state.check:
             if not st.session_state.emps:
-                res = requests.get(API_URL_att)
-                if res.status_code == 404:
-                    st.error("The DataBase is Empty!")
-                else:
-                    st.session_state.emps = res.json()
-                    st.session_state.case = True
+                try:
+                    res = requests.get(API_URL_att)
+                    if res.status_code == 404:
+                        st.error("The DataBase is Empty!")
+                    elif res.status_code == 200:
+                        st.session_state.emps = res.json()
+                        st.session_state.case = True       
+                except Exception as e:
+                    st.error(f"Backend unavailable: {e}")
             
             if st.session_state.case:
                 st.info(f"Recording attendance for {today}")
@@ -284,9 +289,9 @@ if st.session_state.page == "Human Resources/Attendance":
                     st.markdown("Enter Start and End Date of the Records, To Show All Time Records Leave Them Empty")
                     st.markdown("This is an MVP, If You Enter One and Leave Another Empty The Result Would Be All The Time")
                     with col1:
-                        start = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None)
+                        start = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="start")
                     with col2:
-                        end = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None)
+                        end = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="end")
                     if st.button("Show Records"):
                         if start and end:
                             payload = {"start": str(start), "end": str(end)}

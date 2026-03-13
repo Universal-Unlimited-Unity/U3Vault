@@ -50,7 +50,7 @@ def check_date(att_date: date):
         res = conn.execute(stmt).fetchone()
         return res
 
-def att_dataframe_all()
+def att_dataframe_all():
     df = pd.read_sql_table("attendance", eng)
     df["date"] = pd.to_datetime(df["date"])
     return df

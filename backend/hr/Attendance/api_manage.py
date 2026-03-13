@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException, Path, Query, Body, Response
 from contextlib import asynccontextmanager
-from .db_manage import init, emp_attendance_dict, insert_att, check_date, record_all, att_global_analytics, att_one_analytics, plot_status_trend_global, generate_all_employees_report, generate_single_employee_report
+from .db_manage import init, emp_attendance_dict, insert_att, check_date, record_all, record_one, att_global_analytics, att_one_analytics, plot_status_trend_global, generate_all_employees_report, generate_single_employee_report
 from typing import Annotated
 from .model import Attendance
 import datetime
@@ -25,7 +25,7 @@ async def insert_api(att: Annotated[list[Attendance], Body()]):
   insert_att(att)
 
 @app.get("/date")
-async def check_date_api(date: Annotated[datetime.date, Query()]:
+async def check_date_api(date: datetime.date = Query(...)):
   res = check_date(date)
   if res:
     raise HTTPException(status_code=409)
