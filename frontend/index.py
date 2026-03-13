@@ -306,11 +306,10 @@ if st.session_state.page == "Human Resources/Attendance":
                                 st.error(f"Error: {e}")
                         if record.status_code == 200:
                             pre_df = record.json()
-                            df = pd.DataFrame(pre_df)
-                            st.dataframe(df)
+                            st.dataframe(pre_df)
                         elif record.status_code == 404:
                             st.warning("No Records For This Employee In This Time Period")
-                        if st.button("Refresh"):
+                        if st.button("Refresh", key="refresh"):
                             st.rerun()
             except Exception as e:
                 st.error(f"Error: {e}")
@@ -320,9 +319,9 @@ if st.session_state.page == "Human Resources/Attendance":
             st.markdown("Enter Start and End Date of the Records, To Show All Time Records Leave Them Empty")
             st.markdown("This is an MVP, If You Enter One and Leave Another Empty The Result Would Be All The Time")
             with col1:
-                start = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None)
+                start = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="start")
             with col2:
-                end = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None)
+                end = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="end")
             if st.button("Show Records"):
                 if start and end:
                     payload = {"start": str(start), "end": str(end)}
@@ -337,9 +336,8 @@ if st.session_state.page == "Human Resources/Attendance":
                         st.error(f"Error: {e}")
                 if record.status_code == 200:
                     pre_df = record.json()
-                    df = pd.DataFrame(pre_df)
-                    st.dataframe(df)
+                    st.dataframe(pre_df)
                 elif record.status_code == 404:
                     st.warning("No Records For This Time Period")
-                if st.button("Refresh"):
+                if st.button("Refresh", key="refresh"):
                     st.rerun()

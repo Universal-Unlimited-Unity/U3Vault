@@ -10,6 +10,7 @@ from io import BytesIO
 import tempfile
 import os
 from fpdf import FPDF
+from uuid import UUID as UUID_type
 eng = db_connect()
 
 metadata = MetaData()
@@ -66,7 +67,7 @@ def record_all(start: str = None, end: str = None):
         df = timeperiod(df, start, end)
     return df
     
-def record_one(id: str, start: str = None, end: str = None):
+def record_one(id: UUID_type, start: str = None, end: str = None):
     df = att_dataframe_one(id)
     if start and end:
         df = timeperiod(df, start, end)

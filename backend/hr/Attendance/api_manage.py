@@ -4,6 +4,8 @@ from .db_manage import init, emp_attendance_dict, insert_att, check_date, record
 from typing import Annotated
 from .model import Attendance
 import datetime
+from uuid import UUID
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
   init()
@@ -31,14 +33,14 @@ async def check_date_api(date: datetime.date = Query(...)):
     raise HTTPException(status_code=409)
 
 @app.get("/attendance/records")
-async def att_record(start: Annotated[str | None, Query()], end: Annotated[str | None, Query()]):
+async def att_record(start: Annotated[str | None, Query()] = None, end: Annotated[str | None, Query()] = None):
   df = record_all(start, end)
   if df.empty:
     raise HTTPException(status_code=404, detail="No Result For this period of time")
   return df.to_dict(orient="records")
 
 @app.get("/attendance/records/{id}")
-async def att_record(id: Annotated[str, Path()], start: Annotated[str | None, Query()], end: Annotated[str | None, Query()]):
+async def att_record(id: Annotated[UUID, Path()], start: Annotated[str | None, Query()] = None, end: Annotated[str | None, Query()] = None):
   df = record_one(id, start, end)
   if df.empty:
     raise HTTPException(status_code=404, detail="No Result For this period of time")
