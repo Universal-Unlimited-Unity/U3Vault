@@ -344,19 +344,19 @@ if st.session_state.page == "Human Resources/Attendance":
     with analytics:
         radio = st.radio("View Scope", options=["Single Employee", "All Employees"], horizontal=True)
         if radio == "Single Employee":
-            if "start" not in st.session_state:
-                st.session_state.end = None
-            if "end" not in st.session_state:
-                st.session_state.end = None
-            if "id" not in st.session_state:
-                st.session_state.id = None
-            if "data" not in st.session_state:
-                st.session_state.data = None                
+            if "start_o" not in st.session_state:
+                st.session_state.start_o = None
+            if "end_o" not in st.session_state:
+                st.session_state.end_o = None
+            if "id_o" not in st.session_state:
+                st.session_state.id_o = None
+            if "data_o" not in st.session_state:
+                st.session_state.data_o = None                
             try: 
                 result = requests.get(API_URL)
                 if result.status_code == 200:
-                    st.session_state.data = result.json()
-                    st.session_state.id = st.selectbox(
+                    st.session_state.data_o = result.json()
+                    st.session_state.id_o = st.selectbox(
                         "Select Employee",
                         options=list(data.keys()), 
                         format_func=lambda x: data[x],
@@ -366,43 +366,45 @@ if st.session_state.page == "Human Resources/Attendance":
                     st.markdown("Enter Start and End Date of the Records, To Show All Time Records Leave Them Empty")
                     st.markdown("This is an MVP, If You Enter One and Leave Another Empty The Result Would Be All The Time")
                     with col1:
-                        st.session_state.start = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="start")
+                        st.session_state.start_o = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="start")
                     with col2:
-                        st.session_state.end = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="end")
+                        st.session_state.end_o = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="end")
                     if st.button("Show Analytics"):
-                        if st.session_state.start and st.session_state.end:
-                            payload = {"start": str(st.session_state.start), "end": str(st.session_state.end)}
+                        if st.session_state.start_o and st.session_state.end_o:
+                            payload = {"start": str(st.session_state.start_o), "end": str(st.session_state.end_o)}
                             try:
-                                record = requests.get(f"{API_URL_att}/analytics/{st.session_state.id}", params=payload)
+                                record = requests.get(f"{API_URL_att}/analytics/{st.session_state.id_o}", params=payload)
                             except Exception as e:
                                 st.error(f"Error: {e}")
                         else:
                             try:
-                                record = requests.get(f"{API_URL_att}/analytics/{st.session_state.id}")
+                                record = requests.get(f"{API_URL_att}/analytics/{st.session_state.id_o}")
                             except Exception as e:
                                 st.error(f"Error: {e}")
                         if record.status_code == 200:
                             pre_df = record.json()
                             st.dataframe(pre_df)
                             if st.button("Generate Report As PDF"):
-                                if st.session_state.start and st.session_state.end:
-                                    full_name = f"{st.session_state[st.session_state.id]["full_name"]}{st.session_state[st.session_state.id]["middle_name"]}{st.session_state[st.session_state.id]["last_name"]}"
-                                    payload = {"full_name": full_name, "start": str(st.session_state.start), "end": str(st.session_state.end}}
+                                if st.session_state.start_o and st.session_state.end_o:
+                                    full_name = f"{st.session_state.data_o[st.session_state.id_o]["full_name"]}{st.session_state_data_o[st.session_state.id_o]["middle_name"]}{st.session_state.data_o[st.session_state.id_o]["last_name"]}"
+                                    payload = {"full_name": full_name, "start": str(st.session_state.start_o), "end": str(st.session_state.end_o}}
                                     try:
-                                        report = requests.get(f"{API_URL_att}/analytics/reports/{st.session_state.id}", params=payload)
+                                        report = requests.get(f"{API_URL_att}/analytics/reports/{st.session_state.id_o}", params=payload)
                                     except Exception as e:
                                         st.error(f"Error: {e}")
                                 else:
-                                    full_name = f"{st.session_state[st.session_state.id]["full_name"]}{st.session_state[st.session_state.id]["middle_name"]}{st.session_state[st.session_state.id]["last_name"]}"
+                                    full_name = f"{st.session_state.data_o[st.session_state.id_o]["full_name"]}{st.session_state_data_o[st.session_state.id_o]["middle_name"]}{st.session_state.data_o[st.session_state.id_o]["last_name"]}"
                                     payload = {"full_name": full_name}
                                     try:
-                                        report = requests.get(f"{API_URL_att}/analytics/reports/{st.session_state.id}", params=payload)
+                                        report = requests.get(f"{API_URL_att}/analytics/reports/{st.session_state.id_o}", params=payload)
                                     except Exception as e:
                                         st.error(f"Error: {e}")
                                         
                                 if report.status_code == 200:
-                                    b64_report = base64.b64encode(report).decode("utf-8")
-    
+
+                                    pdf_bytes = report.content
+                                    b64_report = base64.b64encode(pdf_bytes).decode("utf-8")
+
                                     st.markdown(
                                         f"""
                                         <iframe
@@ -414,13 +416,13 @@ if st.session_state.page == "Human Resources/Attendance":
                                         """,
                                         unsafe_allow_html=True,
                                     )
+
                                     st.download_button(
-                                                        label="Download employee report (PDF)",
-                                                        data=pdf_bytes,
-                                                        file_name=f"attendance_{id}_{st.session_state}_{st.session_state.end}.pdf",
-                                                        mime="application/pdf"
-                                                    )
-                                
+                                        label="Download employee report (PDF)",
+                                        data=pdf_bytes,
+                                        file_name=f"attendance_{st.session_state.id_}_{st.session_state.start_o}_{st.session_state.end}.pdf",
+                                        mime="application/pdf",
+                                    )
                                 elif repor.status_code == 404:
                                     st.error("Something Went Wrong...")
                         elif record.status_code == 404:
@@ -431,24 +433,29 @@ if st.session_state.page == "Human Resources/Attendance":
             except Exception as e:
                 st.error(f"Error: {e}")
         if radio == "All Employees":
-            
+            if "start" not in st.session_state:
+                st.session_state.end = None
+            if "end" not in st.session_state:
+                st.session_state.end = None
+            if "status" not in st.session_state:
+                st.session_state.status = None
             col1, col2 = st.columns(2)
             st.markdown("Enter Start and End Date of the Records, To Show All Time Records Leave Them Empty")
             st.markdown("This is an MVP, If You Enter One and Leave Another Empty The Result Would Be All The Time")
             with col1:
-                start = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="start")
+                st.session_state.start = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="start")
             with col2:
-                end = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="end")
-            if st.button("Show Ana"):
-                if start and end:
-                    payload = {"start": str(start), "end": str(end)}
+                st.session_state.end = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="end")
+            if st.button("Show Analytics"):
+                if st.session_state.start and st.session_state.end:
+                    payload = {"start": str(st.session_state.start), "end": str(st.session_state.end)}
                     try:
-                        record = requests.get(f"{API_URL_att}/records", params=payload)
+                        record = requests.get(f"{API_URL_att}/analytics", params=payload)
                     except Exception as e:
                         st.error(f"Error: {e}")
                 else:
                     try:
-                        record = requests.get(f"{API_URL_att}/records")
+                        record = requests.get(f"{API_URL_att}/analytics")
                     except Exception as e:
                         st.error(f"Error: {e}")
                 if record.status_code == 200:
@@ -456,5 +463,22 @@ if st.session_state.page == "Human Resources/Attendance":
                     st.dataframe(pre_df)
                 elif record.status_code == 404:
                     st.warning("No Records For This Time Period")
+                if st.button("Generate Plot (Graph)"):
+                    st.session_state.status = st.selectbox("Chose Which Status To Plot Over Time Or Chose All To Plot All Status", options=["Remote", "Vacation", "Sick", "Absent", "Present"])
+                    if st.session_state.start and st.session_state.end:
+                        payload = {"status": st.session_state.status, "start": str(st.session_state.start), "end": str(st.session_state.end}}
+                        try:
+                            plot = requests.get(f"{API_URL_att}/analytics/plots/", params=payload)
+                        except Exception as e:
+                            st.error(f"Error: {e}")
+                    else:
+                        payload = {"status": st.session_state.status}
+                        try:
+                            plot = requests.get(f"{API_URL_att}/analytics/plots/", params=payload)
+                        except Exception as e:
+                            st.error(f"Error: {e}")
+                    if plot.status_code == 200:
+                        st.image(plot.content, use_container_width=True)
+                        if st.button("Generate Report"):
                 if st.button("Refresh", key="refresh"):
                     st.rerun()
