@@ -104,20 +104,23 @@ def plot_status_trend_global(status: str, start: str = None, end : str = None):
     df = _help_plot_status_trend_global(start, end)
 
     df["date"] = pd.to_datetime(df["date"])
-    df["status"] = df["status"].str.strip().str.lower()
-
-    status = status.strip().lower()
 
     df = df.sort_values("date")
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(15, 5))
     vf = BytesIO()
 
-    if status != "all":
+    if status != "All":
         df = df[df["status"] == status]
-        sns.lineplot(data=df, x="date", y="Percentage", ax=ax)
+        if len(df) >= 10:
+            sns.lineplot(data=df, x="date", y="Percentage", ax=ax)
+        else:
+            sns.lineplot(data=df, x="date", y="Percentage", ax=ax, marker='o')
     else:
-        sns.lineplot(data=df, x="date", y="Percentage", hue="status", ax=ax)
+        if len(df) >= 10:
+            sns.lineplot(data=df, x="date", y="Percentage", hue="status")
+        else:
+            sns.lineplot(data=df, x="date", y="Percentage", hue="status", ax=ax, marker='o')
 
     fig.savefig(vf, format="png", bbox_inches="tight")
     plt.close(fig)
