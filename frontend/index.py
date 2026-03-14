@@ -227,12 +227,12 @@ if st.session_state.page == "Human Resources/Attendance":
                 if st.button("Initialize Today's Attendance"):
                     check = requests.get(API_URL_date, params=query)
                     st.session_state.check = True
-            if check.status_code == 409:
-                st.warning("Attendance for today has already been recorded. To prevent fraud and ensure data integrity, the system is locked for new entries until tomorrow.")
-                if st.button("Refresh"):
-                    st.rerun()
-            elif check.status_code == 200:
-                st.session_state.check = True
+                    if check.status_code == 409:
+                        st.warning("Attendance for today has already been recorded. To prevent fraud and ensure data integrity, the system is locked for new entries until tomorrow.")
+                        if st.button("Refresh"):
+                            st.rerun()
+                    elif check.status_code == 200:
+                        st.session_state.check = True
         except Exception as e:
             st.error(f"Backend unavailable: {e}")
         
@@ -359,11 +359,11 @@ if st.session_state.page == "Human Resources/Attendance":
                 result = requests.get(API_URL)
                 if result.status_code == 200:
                     st.session_state.data_o = result.json()
-                    st.session_state.id_o = st.selectbox(
+                    st.selectbox(
                         "Select Employee",
                         options=list(st.session_state.data_o.keys()), 
                         format_func=lambda x: st.session_state.data_o[x],
-                        key="record_select"
+                        key="id_o"
                     )
                     col1, col2 = st.columns(2)
                     st.markdown("Enter Start and End Date of the Records, To Show All Time Records Leave Them Empty")
@@ -540,7 +540,7 @@ if st.session_state.page == "Human Resources/Attendance":
                         st.error("Something Went Wrong")
 
                 if st.session_state.plot_loaded_a and st.session_state.plot_bytes_a is not None:
-                    st.image(st.session_state.plot_bytes_a, use_container_width=True)
+                    st.image(st.session_state.plot_bytes_a, width='stretch')
 
                 if st.session_state.plot_loaded_a:
                     if st.button("Generate Report", key="gen_pdf_a"):
@@ -596,5 +596,4 @@ if st.session_state.page == "Human Resources/Attendance":
                     )
 
             if st.button("Refresh", key="refresh_a"):
-                st.session_state.clear()
                 st.rerun()

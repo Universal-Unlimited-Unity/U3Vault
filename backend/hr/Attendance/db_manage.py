@@ -53,10 +53,11 @@ def check_date(att_date: date):
 
 def att_dataframe_all():
     df = pd.read_sql_table("attendance", eng)
+    df.columns = df.columns.map(str)
     df["date"] = pd.to_datetime(df["date"])
     return df
 
-def att_dataframe_one(id: str):
+def att_dataframe_one(id: UUID_type):
     df = att_dataframe_all()
     df = df[df["id"] == id]
     return df
@@ -97,25 +98,31 @@ def att_one_analytics(id: str, start=None, end=None):
 def _help_plot_status_trend_global(start: str, end: str):
     df = att_dataframe_all()
     df = timeperiod(df, start, end)
-    df = (df.groupby("date")["Status"].value_counts(normalize=True)*100).reset_index(name="Percentage")
+    df = (df.groupby("date")["status"].value_counts(normalize=True)*100).reset_index(name="Percentage")
     return df
 def plot_status_trend_global(status: str, start: str = None, end : str = None):
-    df = _help_plot_status_trend(start, end)
+    df = _help_plot_status_trend_global(start, end)
+
     df["date"] = pd.to_datetime(df["date"])
+    df["status"] = df["status"].str.strip().str.lower()
+
+    status = status.strip().lower()
+
+    df = df.sort_values("date")
+
     fig, ax = plt.subplots()
     vf = BytesIO()
-    if status.lower() != 'all':
-        df = df[df["Status"] == status.lower()]
-        fig, ax = plt.subplots()
-        sns.lineplot(data=df, x='date', y="Percentage", ax=ax)
-        plt.savefig(vf, format="png")
-        plt.close(fig)
-        vf.seek(0)
+
+    if status != "all":
+        df = df[df["status"] == status]
+        sns.lineplot(data=df, x="date", y="Percentage", ax=ax)
     else:
-        sns.lineplot(data=df, x='date', y='Percentage', hue='Status', ax = ax)
-        plt.savefig(vf, format="png")
-        plt.close(fig)
-        vf.seek(0)
+        sns.lineplot(data=df, x="date", y="Percentage", hue="status", ax=ax)
+
+    fig.savefig(vf, format="png", bbox_inches="tight")
+    plt.close(fig)
+
+    vf.seek(0)
     return vf.read()
     
 # Two functions below are ai generated since i don't know how to work with fpdf  

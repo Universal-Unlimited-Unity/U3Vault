@@ -51,7 +51,12 @@ async def att_analytics(start: Annotated[str | None, Query()] = None, end: Annot
   df = att_global_analytics(start, end)
   if df.empty:
     raise HTTPException(status_code=404, detail="No Result For this period of time")
+  
   return df.to_dict(orient="records")
+@app.get("/attendance/analytics/plots")
+async def att_plots(status: Annotated[str, Query()], start: Annotated[str | None, Query()] = None, end: Annotated[str | None, Query()] = None):
+  vf = plot_status_trend_global(status, start, end)
+  return Response(content=vf, media_type="image/png")
 
 @app.get("/attendance/analytics/{id}")
 async def att_analytics(id: Annotated[str, Path()], start: Annotated[str | None, Query()] = None, end: Annotated[str | None, Query()] = None):
