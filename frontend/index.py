@@ -429,6 +429,7 @@ if st.session_state.page == "Human Resources/Attendance":
                             st.warning("No Records For This Employee In This Time Period")
         
                         if st.button("Refresh", key="refresh"):
+                            st.session_state.clear()
                             st.rerun()
             except Exception as e:
                 st.error(f"Error: {e}")
@@ -464,7 +465,7 @@ if st.session_state.page == "Human Resources/Attendance":
                 elif record.status_code == 404:
                     st.warning("No Records For This Time Period")
                 if st.button("Generate Plot (Graph)"):
-                    st.session_state.status = st.selectbox("Chose Which Status To Plot Over Time Or Chose All To Plot All Status", options=["Remote", "Vacation", "Sick", "Absent", "Present"])
+                    st.session_state.status = st.selectbox("Chose Which Status To Plot Over Time Or Chose All To Plot All Status", options=["Remote", "Vacation", "Sick", "Absent", "Present", "All"])
                     if st.session_state.start and st.session_state.end:
                         payload = {"status": st.session_state.status, "start": str(st.session_state.start), "end": str(st.session_state.end}}
                         try:
@@ -474,11 +475,48 @@ if st.session_state.page == "Human Resources/Attendance":
                     else:
                         payload = {"status": st.session_state.status}
                         try:
-                            plot = requests.get(f"{API_URL_att}/analytics/plots/", params=payload)
+                            plot = requests.get(f"{API_URL_att}/analytics/plots", params=payload)
                         except Exception as e:
                             st.error(f"Error: {e}")
                     if plot.status_code == 200:
                         st.image(plot.content, use_container_width=True)
-                        if st.button("Generate Report"):
+                        if st.button("Generate Report", key="gen_pdf"):
+                            if st.session_state.start and st.session_state.end:
+                                payload = {"status": st.session_state.status, "start": str(st.session_state.start), "end": str(st.session_state.end}}
+                                try:
+                                    report = requests.get(f"{API_URL_att}/analytics/reports", params=payload)
+                                except Exception as e:
+                                    st.error(f"Error: {e}")
+                            else:
+                                payload = {"status": st.session_state.status}
+                                try:
+                                    plot = requests.get(f"{API_URL_att}/analytics/reports", params=payload)
+                                except Exception as e:
+                                    st.error(f"Error: {e}")
+                            if report.status_code == 200:
+                                pdf_bytes = report.content
+                                b64_report = base64.b64encode(report).decode("utf-8")
+                                st.markdown(
+                                        f"""
+                                        <iframe
+                                            src="data:application/pdf;base64,{b64_report}"
+                                            width="700"
+                                            height="900"
+                                            type="application/pdf">
+                                        </iframe>
+                                        """,
+                                        unsafe_allow_html=True,
+                                    )
+
+                                st.download_button(
+                                        label="Download employee report (PDF)",
+                                        data=pdf_bytes,
+                                        file_name=f"attendance_{st.session_state.id_}_{st.session_state.start_o}_{st.session_state.end}.pdf",
+                                        mime="application/pdf",
+                                    )
+                            elif report.status_code == 404:
+                                st.error("Something Went Wrong")
+                            
                 if st.button("Refresh", key="refresh"):
+                    st.session_state.clear()
                     st.rerun()
