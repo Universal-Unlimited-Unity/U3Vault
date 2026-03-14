@@ -223,7 +223,10 @@ if st.session_state.page == "Human Resources/Attendance":
         query = {"date": today}
         
         try:
-            check = requests.get(API_URL_date, params=query)
+            if not st.session_state.check:
+                if st.button("Initialize Today's Attendance"):
+                    check = requests.get(API_URL_date, params=query)
+                    st.session_state.check = True
             if check.status_code == 409:
                 st.warning("Attendance for today has already been recorded. To prevent fraud and ensure data integrity, the system is locked for new entries until tomorrow.")
                 if st.button("Refresh"):
@@ -273,7 +276,7 @@ if st.session_state.page == "Human Resources/Attendance":
                         except Exception as e:
                             st.error(f"Error: {e}")
     with records:
-        radio = st.radio("View Scope", options=["Single Employee", "All Employees"], horizontal=True)
+        radio = st.radio("View Scope", options=["Single Employee", "All Employees"], horizontal=True, key="records")
         if radio == "Single Employee":
             try: 
                 result = requests.get(API_URL)
@@ -342,7 +345,7 @@ if st.session_state.page == "Human Resources/Attendance":
                 if st.button("Refresh", key="refresh"):
                     st.rerun()
     with analytics:
-        radio = st.radio("View Scope", options=["Single Employee", "All Employees"], horizontal=True)
+        radio = st.radio("View Scope", options=["Single Employee", "All Employees"], horizontal=True, key="analytics")
         if radio == "Single Employee":
             if "start_o" not in st.session_state:
                 st.session_state.start_o = None
@@ -358,17 +361,17 @@ if st.session_state.page == "Human Resources/Attendance":
                     st.session_state.data_o = result.json()
                     st.session_state.id_o = st.selectbox(
                         "Select Employee",
-                        options=list(data.keys()), 
-                        format_func=lambda x: data[x],
+                        options=list(st.session_state.data_o.keys()), 
+                        format_func=lambda x: st.session_state.data_o[x],
                         key="record_select"
                     )
                     col1, col2 = st.columns(2)
                     st.markdown("Enter Start and End Date of the Records, To Show All Time Records Leave Them Empty")
                     st.markdown("This is an MVP, If You Enter One and Leave Another Empty The Result Would Be All The Time")
                     with col1:
-                        st.session_state.start_o = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="start")
+                        st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="start_o")
                     with col2:
-                        st.session_state.end_o = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="end")
+                        st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="end_o")
                     if st.button("Show Analytics"):
                         if st.session_state.start_o and st.session_state.end_o:
                             payload = {"start": str(st.session_state.start_o), "end": str(st.session_state.end_o)}
@@ -387,7 +390,7 @@ if st.session_state.page == "Human Resources/Attendance":
                             if st.button("Generate Report As PDF"):
                                 if st.session_state.start_o and st.session_state.end_o:
                                     full_name = f"{st.session_state.data_o[st.session_state.id_o]["full_name"]}{st.session_state_data_o[st.session_state.id_o]["middle_name"]}{st.session_state.data_o[st.session_state.id_o]["last_name"]}"
-                                    payload = {"full_name": full_name, "start": str(st.session_state.start_o), "end": str(st.session_state.end_o}}
+                                    payload = {"full_name": full_name, "start": str(st.session_state.start_o), "end": str(st.session_state.end_o)}
                                     try:
                                         report = requests.get(f"{API_URL_att}/analytics/reports/{st.session_state.id_o}", params=payload)
                                     except Exception as e:
@@ -434,89 +437,164 @@ if st.session_state.page == "Human Resources/Attendance":
             except Exception as e:
                 st.error(f"Error: {e}")
         if radio == "All Employees":
-            if "start" not in st.session_state:
-                st.session_state.end = None
-            if "end" not in st.session_state:
-                st.session_state.end = None
-            if "status" not in st.session_state:
-                st.session_state.status = None
+            if "start_a" not in st.session_state:
+                st.session_state.start_a = None
+            if "end_a" not in st.session_state:
+                st.session_state.end_a = None
+            if "status_a" not in st.session_state:
+                st.session_state.status_a = "All"
+
+            if "analytics_loaded_a" not in st.session_state:
+                st.session_state.analytics_loaded_a = False
+            if "analytics_df_a" not in st.session_state:
+                st.session_state.analytics_df_a = None
+
+            if "plot_loaded_a" not in st.session_state:
+                st.session_state.plot_loaded_a = False
+            if "plot_bytes_a" not in st.session_state:
+                st.session_state.plot_bytes_a = None
+
+            if "report_loaded_a" not in st.session_state:
+                st.session_state.report_loaded_a = False
+            if "report_bytes_a" not in st.session_state:
+                st.session_state.report_bytes_a = None
+
             col1, col2 = st.columns(2)
             st.markdown("Enter Start and End Date of the Records, To Show All Time Records Leave Them Empty")
             st.markdown("This is an MVP, If You Enter One and Leave Another Empty The Result Would Be All The Time")
+
             with col1:
-                st.session_state.start = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="start")
+                st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="start_a")
             with col2:
-                st.session_state.end = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="end")
-            if st.button("Show Analytics"):
-                if st.session_state.start and st.session_state.end:
-                    payload = {"start": str(st.session_state.start), "end": str(st.session_state.end)}
+                st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="end_a")
+
+            if st.button("Show Analytics", key="show_analytics_a"):
+                st.session_state.analytics_loaded_a = False
+                st.session_state.analytics_df_a = None
+                st.session_state.plot_loaded_a = False
+                st.session_state.plot_bytes_a = None
+                st.session_state.report_loaded_a = False
+                st.session_state.report_bytes_a = None
+
+                if st.session_state.start_a and st.session_state.end_a:
+                    payload = {"start": str(st.session_state.start_a), "end": str(st.session_state.end_a)}
                     try:
                         record = requests.get(f"{API_URL_att}/analytics", params=payload)
                     except Exception as e:
                         st.error(f"Error: {e}")
+                        record = None
                 else:
                     try:
                         record = requests.get(f"{API_URL_att}/analytics")
                     except Exception as e:
                         st.error(f"Error: {e}")
-                if record.status_code == 200:
-                    pre_df = record.json()
-                    st.dataframe(pre_df)
-                elif record.status_code == 404:
-                    st.warning("No Records For This Time Period")
-                if st.button("Generate Plot (Graph)"):
-                    st.session_state.status = st.selectbox("Chose Which Status To Plot Over Time Or Chose All To Plot All Status", options=["Remote", "Vacation", "Sick", "Absent", "Present", "All"])
-                    if st.session_state.start and st.session_state.end:
-                        payload = {"status": st.session_state.status, "start": str(st.session_state.start), "end": str(st.session_state.end}}
-                        try:
-                            plot = requests.get(f"{API_URL_att}/analytics/plots/", params=payload)
-                        except Exception as e:
-                            st.error(f"Error: {e}")
-                    else:
-                        payload = {"status": st.session_state.status}
+                        record = None
+
+                if record is not None:
+                    if record.status_code == 200:
+                        st.session_state.analytics_df_a = record.json()
+                        st.session_state.analytics_loaded_a = True
+                    elif record.status_code == 404:
+                        st.warning("No Records For This Time Period")
+                        st.session_state.analytics_loaded_a = False
+
+            if st.session_state.analytics_loaded_a and st.session_state.analytics_df_a is not None:
+                st.dataframe(st.session_state.analytics_df_a)
+
+            if st.session_state.analytics_loaded_a:
+                st.session_state.status_a = st.selectbox(
+                    "Chose Which Status To Plot Over Time Or Chose All To Plot All Status",
+                    options=["Remote", "Vacation", "Sick", "Absent", "Present", "All"],
+                    key="status_select_a",
+                )
+
+                if st.button("Generate Plot (Graph)", key="gen_plot_a"):
+                    st.session_state.plot_loaded_a = False
+                    st.session_state.plot_bytes_a = None
+                    st.session_state.report_loaded_a = False
+                    st.session_state.report_bytes_a = None
+
+                    if st.session_state.start_a and st.session_state.end_a:
+                        payload = {
+                            "status": st.session_state.status_a,
+                            "start": str(st.session_state.start_a),
+                            "end": str(st.session_state.end_a),
+                        }
                         try:
                             plot = requests.get(f"{API_URL_att}/analytics/plots", params=payload)
                         except Exception as e:
                             st.error(f"Error: {e}")
-                    if plot.status_code == 200:
-                        st.image(plot.content, use_container_width=True)
-                        if st.button("Generate Report", key="gen_pdf"):
-                            if st.session_state.start and st.session_state.end:
-                                payload = {"status": st.session_state.status, "start": str(st.session_state.start), "end": str(st.session_state.end}}
-                                try:
-                                    report = requests.get(f"{API_URL_att}/analytics/reports", params=payload)
-                                except Exception as e:
-                                    st.error(f"Error: {e}")
-                            else:
-                                payload = {"status": st.session_state.status}
-                                try:
-                                    plot = requests.get(f"{API_URL_att}/analytics/reports", params=payload)
-                                except Exception as e:
-                                    st.error(f"Error: {e}")
-                            if report.status_code == 200:
-                                pdf_bytes = report.content
-                                b64_report = base64.b64encode(report).decode("utf-8")
-                                st.markdown(
-                                        f"""
-                                        <iframe
-                                            src="data:application/pdf;base64,{b64_report}"
-                                            width="700"
-                                            height="900"
-                                            type="application/pdf">
-                                        </iframe>
-                                        """,
-                                        unsafe_allow_html=True,
-                                    )
+                            plot = None
+                    else:
+                        payload = {"status": st.session_state.status_a}
+                        try:
+                            plot = requests.get(f"{API_URL_att}/analytics/plots", params=payload)
+                        except Exception as e:
+                            st.error(f"Error: {e}")
+                            plot = None
 
-                                st.download_button(
-                                        label="Download employee report (PDF)",
-                                        data=pdf_bytes,
-                                        file_name=f"attendance_{st.session_state.id_}_{st.session_state.start_o}_{st.session_state.end}.pdf",
-                                        mime="application/pdf",
-                                    )
-                            elif report.status_code == 404:
-                                st.error("Something Went Wrong")
-                            
-                if st.button("Refresh", key="refresh"):
-                    st.session_state.clear()
-                    st.rerun()
+                    if plot is not None and plot.status_code == 200:
+                        st.session_state.plot_bytes_a = plot.content
+                        st.session_state.plot_loaded_a = True
+                    elif plot is not None and plot.status_code == 404:
+                        st.error("Something Went Wrong")
+
+                if st.session_state.plot_loaded_a and st.session_state.plot_bytes_a is not None:
+                    st.image(st.session_state.plot_bytes_a, use_container_width=True)
+
+                if st.session_state.plot_loaded_a:
+                    if st.button("Generate Report", key="gen_pdf_a"):
+                        st.session_state.report_loaded_a = False
+                        st.session_state.report_bytes_a = None
+
+                        if st.session_state.start_a and st.session_state.end_a:
+                            payload = {
+                                "status": st.session_state.status_a,
+                                "start": str(st.session_state.start_a),
+                                "end": str(st.session_state.end_a),
+                            }
+                            try:
+                                report = requests.get(f"{API_URL_att}/analytics/reports", params=payload)
+                            except Exception as e:
+                                st.error(f"Error: {e}")
+                                report = None
+                        else:
+                            payload = {"status": st.session_state.status_a}
+                            try:
+                                report = requests.get(f"{API_URL_att}/analytics/reports", params=payload)
+                            except Exception as e:
+                                st.error(f"Error: {e}")
+                                report = None
+
+                        if report is not None and report.status_code == 200:
+                            st.session_state.report_bytes_a = report.content
+                            st.session_state.report_loaded_a = True
+                        elif report is not None and report.status_code == 404:
+                            st.error("Something Went Wrong")
+
+                if st.session_state.report_loaded_a and st.session_state.report_bytes_a is not None:
+                    pdf_bytes = st.session_state.report_bytes_a
+                    b64_report = base64.b64encode(pdf_bytes).decode("utf-8")
+
+                    st.markdown(
+                        f"""
+                        <iframe
+                            src="data:application/pdf;base64,{b64_report}"
+                            width="700"
+                            height="900"
+                            type="application/pdf">
+                        </iframe>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+
+                    st.download_button(
+                        label="Download employee report (PDF)",
+                        data=pdf_bytes,
+                        file_name=f"attendance_{st.session_state.start_a}_{st.session_state.end_a}.pdf",
+                        mime="application/pdf",
+                    )
+
+            if st.button("Refresh", key="refresh_a"):
+                st.session_state.clear()
+                st.rerun()
