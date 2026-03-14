@@ -595,4 +595,8 @@ if st.session_state.page == "Human Resources/Attendance":
                     )
 
             if st.button("Refresh", key="refresh_a", width='stretch'):
+                del st.session_state["analytics_loaded_a"]
+                del st.session_state["start_a"]
+                del st.session_state["end_a"]
+                del st.session_state["report_loaded_a"]           
                 st.rerun()
