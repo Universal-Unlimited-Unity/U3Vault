@@ -7,7 +7,7 @@ import base64
 from uuid import uuid4
 from datetime import date
 from model import Employee
-
+import time
 load_dotenv()
 API_URL = os.getenv("API_URL")
 API_URL_att = os.getenv("API_URL_att")
@@ -224,13 +224,12 @@ if st.session_state.page == "Human Resources/Attendance":
         
         try:
             if not st.session_state.check:
-                if st.button("Initialize Today's Attendance"):
+                if st.button("Initialize Today's Attendance", width='stretch'):
                     check = requests.get(API_URL_date, params=query)
                     if check.status_code == 409:
                         st.warning("Attendance for today has already been recorded. To prevent fraud and ensure data integrity, the system is locked for new entries until tomorrow.")
-                        st.stop()
-                        if st.button("Refresh"):
-                            st.rerun()
+                        time.sleep(6)
+                        st.rerun()
                     elif check.status_code == 200:
                         st.session_state.check = True
         except Exception as e:
