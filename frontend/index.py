@@ -226,9 +226,9 @@ if st.session_state.page == "Human Resources/Attendance":
             if not st.session_state.check:
                 if st.button("Initialize Today's Attendance"):
                     check = requests.get(API_URL_date, params=query)
-                    st.session_state.check = True
                     if check.status_code == 409:
                         st.warning("Attendance for today has already been recorded. To prevent fraud and ensure data integrity, the system is locked for new entries until tomorrow.")
+                        st.stop()
                         if st.button("Refresh"):
                             st.rerun()
                     elif check.status_code == 200:
