@@ -269,6 +269,7 @@ if st.session_state.page == "Human Resources/Attendance":
                                 st.success("Attendance recorded successfully.")
                                 st.session_state.emps = {}
                                 st.session_state.check = False
+                                time.sleep(6)
                                 st.rerun()
                             else:
                                 st.error(f"Error: {res.text}")
@@ -294,7 +295,7 @@ if st.session_state.page == "Human Resources/Attendance":
                         start = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="start")
                     with col2:
                         end = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="end")
-                    if st.button("Show Records"):
+                    if st.button("Show Records", width='stretch'):
                         if start and end:
                             payload = {"start": str(start), "end": str(end)}
                             try:
@@ -324,7 +325,7 @@ if st.session_state.page == "Human Resources/Attendance":
                 start = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="start")
             with col2:
                 end = st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="end")
-            if st.button("Show Records"):
+            if st.button("Show Records", width='stretch'):
                 if start and end:
                     payload = {"start": str(start), "end": str(end)}
                     try:
@@ -341,7 +342,7 @@ if st.session_state.page == "Human Resources/Attendance":
                     st.dataframe(pre_df)
                 elif record.status_code == 404:
                     st.warning("No Records For This Time Period")
-                if st.button("Refresh", key="refresh"):
+                if st.button("Refresh", key="refresh", width='stretch'):
                     st.rerun()
     with analytics:
         radio = st.radio("View Scope", options=["Single Employee", "All Employees"], horizontal=True, key="analytics")
@@ -386,7 +387,7 @@ if st.session_state.page == "Human Resources/Attendance":
                         if record.status_code == 200:
                             pre_df = record.json()
                             st.dataframe(pre_df)
-                            if st.button("Generate Report As PDF"):
+                            if st.button("Generate Report As PDF", width='stretch'):
                                 if st.session_state.start_o and st.session_state.end_o:
                                     full_name = f"{st.session_state.data_o[st.session_state.id_o]["full_name"]}{st.session_state_data_o[st.session_state.id_o]["middle_name"]}{st.session_state.data_o[st.session_state.id_o]["last_name"]}"
                                     payload = {"full_name": full_name, "start": str(st.session_state.start_o), "end": str(st.session_state.end_o)}
@@ -430,8 +431,7 @@ if st.session_state.page == "Human Resources/Attendance":
                         elif record.status_code == 404:
                             st.warning("No Records For This Employee In This Time Period")
         
-                        if st.button("Refresh", key="refresh"):
-                            st.session_state.clear()
+                        if st.button("Refresh", key="refresh", width='stretch'):
                             st.rerun()
             except Exception as e:
                 st.error(f"Error: {e}")
@@ -467,7 +467,7 @@ if st.session_state.page == "Human Resources/Attendance":
             with col2:
                 st.date_input("Start Date", min_value=date(2010, 1, 1), value=None, key="end_a")
 
-            if st.button("Show Analytics", key="show_analytics_a"):
+            if st.button("Show Analytics", key="show_analytics_a", width='stretch'):
                 st.session_state.analytics_loaded_a = False
                 st.session_state.analytics_df_a = None
                 st.session_state.plot_loaded_a = False
@@ -507,7 +507,7 @@ if st.session_state.page == "Human Resources/Attendance":
                     key="status_select_a",
                 )
 
-                if st.button("Generate Plot (Graph)", key="gen_plot_a"):
+                if st.button("Generate Plot (Graph)", key="gen_plot_a", width='stretch'):
                     st.session_state.plot_loaded_a = False
                     st.session_state.plot_bytes_a = None
                     st.session_state.report_loaded_a = False
@@ -542,7 +542,7 @@ if st.session_state.page == "Human Resources/Attendance":
                     st.image(st.session_state.plot_bytes_a, width='stretch')
 
                 if st.session_state.plot_loaded_a:
-                    if st.button("Generate Report", key="gen_pdf_a"):
+                    if st.button("Generate Report", key="gen_pdf_a", width='stretch'):
                         st.session_state.report_loaded_a = False
                         st.session_state.report_bytes_a = None
 
@@ -591,8 +591,8 @@ if st.session_state.page == "Human Resources/Attendance":
                         label="Download employee report (PDF)",
                         data=pdf_bytes,
                         file_name=f"attendance_{st.session_state.start_a}_{st.session_state.end_a}.pdf",
-                        mime="application/pdf",
+                        mime="application/pdf", width='stretch'
                     )
 
-            if st.button("Refresh", key="refresh_a"):
+            if st.button("Refresh", key="refresh_a", width='stretch'):
                 st.rerun()
