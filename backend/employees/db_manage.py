@@ -1,9 +1,10 @@
 from db.db_connect import db_connect
 from .model import Employee
-from sqlalchemy import insert, Table, Column, MetaData, String, Date, select, delete
+from sqlalchemy import insert, Table, Column, MetaData, String, Date, select, delete, ForeignKey, UniqueConstraint
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.engine import CursorResult
+from create_company.db_manage import company
 
 eng = db_connect()
 metadata = MetaData()
@@ -12,6 +13,7 @@ employees = Table(
     "employees",
     metadata,
     Column("id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
+    Column("company_id", UUID(as_uuid=True), ForeignKey("company.id"), nullable=False),
     Column("first_name", String, nullable=False),
     Column("last_name", String, nullable=False),
     Column("middle_name", String, nullable=True),
@@ -20,7 +22,8 @@ employees = Table(
     Column("gender", String, nullable=False),
     Column("dob", Date, nullable=False),
     Column("phone", String, nullable=False),
-    Column("email", String, nullable=False, unique=True),
+    Column("email", String, nullable=False),
+    Column("password", String, nullable=False),
     Column("address", String, nullable=False),
     Column("photo", String, nullable=True),
     Column("department", String, nullable=False),
@@ -30,7 +33,8 @@ employees = Table(
     Column("employment_type", String, nullable=False),
     Column("contract_type", String, nullable=False),
     Column("status", String, nullable=False),
-) 
+    UniqueConstraint("company_id", "email")
+)
 
 def init() -> None:
     metadata.create_all(eng, checkfirst=True)
