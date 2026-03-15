@@ -1,0 +1,12 @@
+from fastapi import APIRouter, HTTPException
+from .db_manage import insert_company
+from .model import Company
+
+router = APIRouter(prefix="/company", tags=["company"])
+
+@router.post("/")
+async def create_company_api(company: Company):
+    company_id = insert_company(company)
+    if not company_id:
+        raise HTTPException(status_code=500, detail="Failed to create company")
+    return str(company_id)
