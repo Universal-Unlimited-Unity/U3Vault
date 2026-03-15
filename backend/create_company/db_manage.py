@@ -6,7 +6,7 @@ from db.db_connect import db_connect
 eng = db_connect()
 metadata = MetaData()
 
-company_table = Table(
+company = Table(
     "company",
     metadata,
     Column("id", UUID(as_uuid=True), primary_key=True),
