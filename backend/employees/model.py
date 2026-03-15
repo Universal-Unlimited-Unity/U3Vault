@@ -3,20 +3,25 @@ from datetime import date
 from enum import Enum
 from pydantic_extra_types.phone_numbers import PhoneNumber
 from uuid import UUID, uuid4
+
+
 class gender(str, Enum):
     Male = "Male"
     Female = "Female"
-    
+
+
 class status(str, Enum):
     Active = "Active"
     On_Leave = "On Leave"
     Inactive = "Inactive"
     Resigned = "Resigned"
-    
+
+
 class contract_type(str, Enum):
     Employee = "Employee"
     Temporary = "Temporary"
     Intern = "Intern"
+
 
 class employment_type(str, Enum):
     Full_time = "Full-time"
@@ -25,6 +30,7 @@ class employment_type(str, Enum):
 
 class Employee(BaseModel):
     id: UUID = Field(default_factory=uuid4)
+    company_id: UUID
     first_name: str
     last_name: str
     middle_name: str | None
@@ -34,6 +40,7 @@ class Employee(BaseModel):
     dob: date
     phone: PhoneNumber
     email: EmailStr
+    password: str
     address: str
     photo: str
     department: str
@@ -43,7 +50,3 @@ class Employee(BaseModel):
     employment_type: employment_type
     contract_type: contract_type
     status: status
-
-    
-    
-
