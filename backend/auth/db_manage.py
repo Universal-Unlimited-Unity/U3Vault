@@ -29,7 +29,7 @@ def admin_auth(email: str, pwd: str):
       }
     return jwt.encode(payload, TOKEN_KEY, algorithme=ALGO)
 
-def reg_auth(slug: str, email: str, pwd: str, role):
+def reg_auth(slug: str, email: str, pwd: str):
   with eng.connect() as conn:
     stmt = select(company.c.id).where(company.c.slug == slug)
     comp_id = conn.execute(stmt).fetchone()
