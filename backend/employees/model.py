@@ -27,14 +27,17 @@ class employment_type(str, Enum):
     Full_time = "Full-time"
     Part_time = "Part-time"
 
-
+class role(str, Enum):
+    manager = "manager"
+    employee = "employee"
+    
 class Employee(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     company_id: UUID
     first_name: str
     last_name: str
     middle_name: str | None
-    role: str
+    role: role
     supervisor: str | None
     gender: gender
     dob: date
