@@ -4,6 +4,7 @@ from datetime import datetime
 
 class Company(BaseModel):
     id: UUID = Field(default_factory=uuid4)
+    name: str
     email: EmailStr
     password: str
     address: str | None
