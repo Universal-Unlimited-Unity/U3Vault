@@ -34,13 +34,13 @@ def reg_auth(slug: str, email: str, pwd: str, role):
     stmt = select(company.c.id).where(company.c.slug == slug)
     comp_id = conn.execute(stmt).fetchone()
     if not comp_id:
-      return -1
+      return None
     stmt = select(employees).where(employees.c.company_id == comp_id.id, employees.c.email == email)
     user = conn.execute(stmt).fetchone()
     if not user:
-      return -1
+      return None
     if not pwd_context.verify(password, user.password):
-      return 1
+      return None
     payload = {
       "id": str(user.id),
       "role": user.role,
