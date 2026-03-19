@@ -1,14 +1,9 @@
 from fastapi import APIRouter, HTTPException, Path
-from .db_manage import init, add, listall_selectbox, delete_emp, listall, select_emp
+from .db_manage import add, listall_selectbox, delete_emp, listall, select_emp
 from .model import Employee
 from typing import Annotated
 
 router = APIRouter(prefix="/employees", tags=["employees"])
-
-@router.on_event("startup")
-async def startup():
-    init()
-    print("Employee Table Created!")
 
 @router.post("", response_model=Employee)
 async def add_api(emp: Employee) -> Employee:
