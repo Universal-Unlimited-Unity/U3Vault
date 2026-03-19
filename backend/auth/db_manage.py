@@ -19,9 +19,9 @@ def admin_auth(email: str, pwd: str):
     stmt = select(company).where(company.c.email == email)
     company = conn.execute(stmt).fetchone()
     if not company:
-      return -1
+      return None
     if not pwd_context.verify(password, company.password):
-      return 1
+      return None
     payload = {
       "role": "admin",
       "company_id": str(company.id),
