@@ -20,7 +20,7 @@ def admin_auth(email: str, pwd: str):
     company = conn.execute(stmt).fetchone()
     if not company:
       return -1
-    if not pwd_context.verify(password, company.password)
+    if not pwd_context.verify(password, company.password):
       return 1
     payload = {
       "role": "admin",
