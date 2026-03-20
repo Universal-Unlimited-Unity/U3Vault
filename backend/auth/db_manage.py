@@ -23,7 +23,7 @@ def admin_auth(email: str, pwd: str):
     if not pwd_context.verify(password, company.password):
       return None
     payload = {
-      "role": "admin",
+      "role": "Admin",
       "company_id": str(company.id),
       "exp": datetime.utcnow() + timedelta(minutes=int(TOKEN_EXP_MIN))
       }
