@@ -27,7 +27,7 @@ def admin_auth(email: str, pwd: str):
       "company_id": str(company.id),
       "exp": datetime.utcnow() + timedelta(minutes=int(TOKEN_EXP_MIN))
       }
-    return jwt.encode(payload, TOKEN_KEY, algorithms=ALGO)
+    return jwt.encode(payload, TOKEN_KEY, algorithms=[ALGO])
 
 def reg_auth(slug: str, email: str, pwd: str):
   with eng.connect() as conn:
@@ -47,4 +47,4 @@ def reg_auth(slug: str, email: str, pwd: str):
       "company_id": str(user.company_id),
       "exp": datetime.utcnow() + timedelta(minutes:int(TOKEN_EXP_MIN))
       }
-    return jwt.encode(payload, TOKEN_KEY, algorithms=ALGO)
+    return jwt.encode(payload, TOKEN_KEY, algorithms=[ALGO])
