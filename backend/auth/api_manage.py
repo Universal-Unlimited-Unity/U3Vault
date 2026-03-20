@@ -12,7 +12,7 @@ async def auth(login: admin | regular):
       raise HTTPException(status_code=401, detail="Wrong Infos")
     return {"token": token}
   else:
-    token = admin_auth(login.slug, login.email, login.password)
+    token = reg_auth(login.slug, login.email, login.password)
     if not token:
       raise HTTPException(status_code=401, detail="Wrong Infos")
     return {"token": token}
