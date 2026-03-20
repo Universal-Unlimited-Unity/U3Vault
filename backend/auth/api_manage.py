@@ -1,11 +1,12 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Path
+from typing import Annotated
 from .db_manage import admin_auth, reg_auth
 from .model import admin, regular
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 router.post("/login")
-async def auth(login: admin | regular):
+async def auth(login: Annotated[admin | regular, Path()]):
   if login.role == "Admin":
     token = admin_auth(login.email, login.password)
     if not token:
