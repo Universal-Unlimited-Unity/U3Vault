@@ -12,6 +12,7 @@ load_dotenv()
 API_URL = os.getenv("API_URL")
 API_URL_att = os.getenv("API_URL_att")
 API_URL_date = os.getenv("API_URL_date")
+API_URL_AUTH = os.getenv("API_URL_AUTH")
 def save_upload(upload: UploadedFile, dir: str) -> str | None:
     if upload is None:
         return None
@@ -27,6 +28,26 @@ def save_upload(upload: UploadedFile, dir: str) -> str | None:
     
 st.set_page_config(page_icon="logoo.png", page_title="U3Vault")
 
+# sign-in/sign-up
+if "logged" not in session_state:
+    st.session_state.logged = None
+
+if not st.session_state.logged:
+    choice = st.radio("Chose An Action", ["Create Company Account", "Login"])
+    if choice == "Login":
+        st.session_state.role = st.selectbox("Login Type", options=["Admin", "Manager/Employee"], width='stretch')
+        if st.session_state.role == "Manager/Employee":
+            with st.from("Login", clear_on_submit=True):
+                slug = st.text_input("Company Slug", width='stretch')
+                email = st.text_input("Email", width='stretch')
+                pwd = st.text_input("Password", width='stretch')
+                if st.form_submit_button("Login"):
+                    payload = {"role": st.session_state.role,
+                               "slug": slug,
+                               "email": email,
+                               "password": pwd}
+                    requests.post(
+                        
 st.sidebar.title("Navigation")
 
 if "page" not in st.session_state:
