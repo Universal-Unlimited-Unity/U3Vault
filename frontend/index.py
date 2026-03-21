@@ -133,23 +133,32 @@ if not st.session_state.logged:
 if st.session_state.logged:
     st.session_state.user = jwt.decode(st.session_state.token, TOKEN_KEY, algorithms=[ALGO])
     if st.session_state.user["role"] == "Employee":
+        if "info" not in st.session_state:
+            st.session_state.info = None
         try:
-            info = requests.get(f"{API_URL}/{st.session_state.user["id"]}")
+            info = requests.get(f"{API_URL}/{st.session_state.user['id']}")
             if info.status_code == 200:
-                st.session_state.info = Employee(**info.json())
+                if not st.session_state.info:
+                    st.session_state.info = Employee(**info.json())
         except:
             st.error(f"Backend Error")
-        st.title(f"Welcome {st.session_state.info.first_name} {st.session_state.info.last_name}")
-        st.title(f"You Are {st.session_state.info.role}")
+        if st.session_state.info:
+            st.title(f"Welcome {st.session_state.info.first_name} {st.session_state.info.last_name}")
+            st.title(f"You Are {st.session_state.info.role.value}")
     if st.session_state.user["role"] == "Manager":
+        if "info" not in st.session_state:
+            st.session_state.info = None
         try:
-            info = requests.get(f"{API_URL}/{st.session_state.user["id"]}")
+            info = requests.get(f"{API_URL}/{st.session_state.user['id']}")
             if info.status_code == 200:
-                st.session_state.info = Employee(**info.json())
-        except:
-            st.error(f"Backend Error")
-        st.title(f"Welcome {st.session_state.info.first_name} {st.session_state.info.last_name}")
-        st.title(f"You Are {st.session_state.info.role}")
+                if not st.session_state.info:
+                    st.session_state.info = Employee(**info.json())
+        except Exception as e:
+            st.error(f"Backend Error {e}")
+        
+        if st.session_state.info:
+            st.title(f"Welcome {st.session_state.info.first_name} {st.session_state.info.last_name}")
+            st.title(f"You Are {st.session_state.info.role.value}")
     if st.session_state.user["role"] == "Admin":
         
         st.sidebar.title("Navigation")
