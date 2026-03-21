@@ -73,6 +73,7 @@ if not st.session_state.logged:
                     res = requests.post(f"{API_URL_AUTH}/login", json=payload)
                     if res.status_code == 200:
                         st.session_state.token = res.json()["token"]
+                        st.session_state.headers = {"auth": f"Bearer {st.session_state.token}"}
                         st.session_state.logged = True
                     elif res.status_code = 401:
                         st.error("Wrong Infos")
@@ -119,9 +120,23 @@ if not st.session_state.logged:
 if st.session_state.logged:
     st.session_state.user = jwt.decode(st.session_state.token, TOKEN_KEY, algorithms=[ALGO])
     if st.session_state.user["role"] == "Employee":
-        // content
+        try:
+            info = requests.get(f"{API_URL}/{st.session_state.user["id"]}")
+            if info.status_code == 200:
+                st.session_state.info = Employee(**info.json())
+        except:
+            st.error(f"Backend Error")
+        st.title(f"Welcome {st.session_state.info.first_name} {st.session_state.info.last_name}")
+        st.title(f"You Are {st.session_state.info.role}")
     if st.session_state.user["role"] == "Manager":
-        // content
+        try:
+            info = requests.get(f"{API_URL}/{st.session_state.user["id"]}")
+            if info.status_code == 200:
+                st.session_state.info = Employee(**info.json())
+        except:
+            st.error(f"Backend Error")
+        st.title(f"Welcome {st.session_state.info.first_name} {st.session_state.info.last_name}")
+        st.title(f"You Are {st.session_state.info.role}")
     if st.session_state.user["role"] == "Admin":
         
         st.sidebar.title("Navigation")
@@ -171,7 +186,7 @@ if st.session_state.logged:
             ])
         
             with add:
-                with st.form("add_employee_form", clear_on_submit=True):
+                with st.form("add_employee_form"):
                     col1, col2 = st.columns(2)
                     with col1:
                         first_name = st.text_input("First Name")
@@ -183,6 +198,8 @@ if st.session_state.logged:
                         email = st.text_input("Email")
                         address = st.text_area("Address")
                         photo = st.file_uploader("Upload Photo", type=["png", "jpg", "jpeg"])
+                        role = st.selectbox("Role", options=["Manager", "Employee"])
+                        pwd1 = st.text_input("Password", type="password")
                     with col2:
                         department = st.text_input("Department")
                         role = st.text_input("Job Title / Role")
@@ -193,40 +210,46 @@ if st.session_state.logged:
                         contract_type = st.selectbox("Contract Type", ["Employee", "Temporary", "Intern"])
                         contract_pdf = st.file_uploader("Upload Contract PDF", type=["pdf"])
                         emergency_phone = st.text_input("Emergency Contact Phone (Optional)")
+                        pwd2 = st.text_input("Password", type="password")
+
                     submit = st.form_submit_button("Add Employee")
         
                 if submit:
-                    emp_payload = {
-                        "first_name": first_name.title(),
-                        "middle_name": middle_name.title() if middle_name else None,
-                        "last_name": last_name.title(),
-                        "gender": gender, 
-                        "dob": str(dob),
-                        "phone": phone,
-                        "email": email,
-                        "address": address,
-                        "photo": save_upload(photo, "uploads/photos"), 
-                        "department": department,
-                        "role": role,
-                        "supervisor": supervisor if supervisor else None,
-                        "employment_type": employment_type,       
-                        "start_date": str(start_date),
-                        "status": status,
-                        "contract_type": contract_type,
-                        "contract_pdf": save_upload(contract_pdf, "uploads/contracts"), 
-                        "emergency_phone": emergency_phone if emergency_phone else None
-                    }
-                    try:
-                        response = requests.post(API_URL, json=emp_payload)
-                        if response.status_code == 200:
-                            st.success("Employee Added Successfully!")
-                            st.dataframe(response.json())
-                    except Exception as e:
-                        st.error(f"Error: {e}")
+                    if pwd1 == pwd2:
+                        emp_payload = {
+                            "first_name": first_name.title(),
+                            "middle_name": middle_name.title() if middle_name else None,
+                            "last_name": last_name.title(),
+                            "gender": gender, 
+                            "dob": str(dob),
+                            "phone": phone,
+                            "email": email,
+                            "address": address,
+                            "photo": save_upload(photo, "uploads/photos"), 
+                            "department": department,
+                            "role": role,
+                            "password": pwd1,
+                            "supervisor": supervisor if supervisor else None,
+                            "employment_type": employment_type,       
+                            "start_date": str(start_date),
+                            "status": status,
+                            "contract_type": contract_type,
+                            "contract_pdf": save_upload(contract_pdf, "uploads/contracts"),
+                            "emergency_phone": emergency_phone if emergency_phone else None
+                        }
+                        try:
+                            response = requests.post(API_URL, json=emp_payload, st.session_state.headers=headers)
+                            if response.status_code == 200:
+                                st.success("Employee Added Successfully!")
+                                st.dataframe(response.json())
+                        except Exception as e:
+                            st.error(f"Error: {e}")
+                    else:
+                        st.error("Passwords Don't match")
                         
             with delete:
                 try: 
-                    result = requests.get(API_URL)
+                    result = requests.get(API_URL, headers=st.session_state.headers)
                     if result.status_code == 200:
                         data = result.json()
                         to_delete = st.selectbox(
@@ -236,7 +259,7 @@ if st.session_state.logged:
                             key="del_select"
                         )
                         if st.button("Confirm Deletion", use_container_width=True, key="del_confirm"):
-                            deleted = requests.delete(f"{API_URL}/{to_delete}")
+                            deleted = requests.delete(f"{API_URL}/{to_delete}", headers=st.session_state.headers)
                             if deleted.status_code == 200:
                                 st.success("Employee Deleted Successfully!")
                                 st.info("Info of Deleted Employee:")
@@ -250,7 +273,7 @@ if st.session_state.logged:
         
             with listall:
                 try:
-                    response = requests.get(f"{API_URL}/dataframe")
+                    response = requests.get(f"{API_URL}/dataframe", headers=st.session_sate.headers)
                     if response.status_code == 200:
                         st.dataframe(response.json())
                     elif response.status_code == 404:
@@ -261,7 +284,7 @@ if st.session_state.logged:
             
             with showprofile:
                 try: 
-                    result = requests.get(API_URL)
+                    result = requests.get(API_URL, headers=st.session_state.headers)
                     if result.status_code == 200:
                         data = result.json()
                         to_show = st.selectbox(
@@ -271,7 +294,7 @@ if st.session_state.logged:
                             key="prof_select"
                         )
                         
-                        if st.button("Show Profile", use_container_width=True, key="prof_btn"):
+                        if st.button("Show Profile", width='stretch', key="prof_btn"):
                             emp_api = requests.get(f"{API_URL}/{to_show}")
                             if emp_api.status_code == 200:
                                 root = os.getenv("UPLOADS_ROOT", "/myapp/uploads")
@@ -305,7 +328,6 @@ if st.session_state.logged:
                 except Exception as e:
                     st.error(f"Error: {e}")
         if st.session_state.page == "Human Resources/Attendance":
-            # we need to really understand this code and anlyze it and we need sucess logic to work
             if "case" not in st.session_state:
                 st.session_state.case = False
             if "emps" not in st.session_state:
