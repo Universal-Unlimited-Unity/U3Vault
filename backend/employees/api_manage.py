@@ -1,24 +1,27 @@
-from fastapi import APIRouter, HTTPException, Path, Header
+from fastapi import APIRouter, HTTPException, Path, Header, Body
 from .db_manage import add, listall_selectbox, delete_emp, listall, select_emp
 from .model import Employee
 from typing import Annotated
 from jose import jwt
-from dotenv import load_env
+from dotenv import load_dotenv
 import os
+from passlib.context import CryptContext
 router = APIRouter(prefix="/employees", tags=["employees"])
-load_env()
+load_dotenv()
 TOKEN_KEY = os.getenv("TOKEN_KEY")
-ALGO = os.getnenv("ALGO")
+ALGO = os.getenv("ALGO")
 
 def lazy(auth):
     token = auth.split()[1]
-    user = jwt.decode(token, TOEKN_KEY, ALGO)
+    user = jwt.decode(token, TOKEN_KEY, ALGO)
     return user
-    
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")   
 @router.post("", response_model=Employee)
-async def add_api(emp: Employee, auth: Annotated[str, Header()]) -> Employee:
+async def add_api(emp: Annotated[Employee, Body()], auth: Annotated[str, Header()]) -> Employee:
     user = lazy(auth)
     if user["role"] == "Admin":
+        emp.password = pwd_context.hash(emp.password)
         return add(emp)
     else:
         raise HTTPException(status_code=401)
@@ -48,8 +51,8 @@ async def listall_api(auth: Annotated[str, Header()]):
 async def select_emp_api(id: Annotated[str, Path()]):
     return select_emp(id)
     
-@router.delete("/{id}", response_model=Employee, auth: Annotated[str, Header()]):
-async def delete_emp_api(id: Annotated[str, Path()]):
+@router.delete("/{id}", response_model=Employee)
+async def delete_emp_api(id: Annotated[str, Path()], auth: Annotated[str, Header()]):
     user = lazy(auth)
     if not user["role"] == "Admin":
         raise HTTPException(status_code=401)

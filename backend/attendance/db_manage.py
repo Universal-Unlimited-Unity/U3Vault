@@ -1,8 +1,8 @@
 from sqlalchemy import MetaData, Table, Column, ForeignKey, String, Date, select, insert
-from db.db_connect import db_connect
+from db.db_connect import db_connect, metadata
 from datetime import date
 from sqlalchemy.dialects.postgresql import UUID
-from hr.employees.db_manage import employees
+from employees.db_manage import employees
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -13,7 +13,6 @@ from fpdf import FPDF
 from uuid import UUID as UUID_type
 eng = db_connect()
 
-metadata = MetaData()
 attendance = Table(
     "attendance",
     metadata,

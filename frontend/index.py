@@ -33,7 +33,7 @@ def save_upload(upload: UploadedFile, dir: str) -> str | None:
 st.set_page_config(page_icon="logoo.png", page_title="U3Vault")
 
 # sign-in/sign-up
-if "logged" not in session_state:
+if "logged" not in st.session_state:
     st.session_state.logged = False
 
 if not st.session_state.logged:
@@ -42,11 +42,12 @@ if not st.session_state.logged:
         st.title("Welcome Back")
         st.session_state.role = st.selectbox("Login Type", options=["Admin", "Manager/Employee"], width='stretch')
         if st.session_state.role == "Manager/Employee":
-            with st.from("Login", clear_on_submit=True):
+            with st.form("Login", clear_on_submit=True):
                 slug = st.text_input("Company Slug")
                 email = st.text_input("Email")
                 pwd = st.text_input("Password", type="password")
-            if st.form_submit_button("Login", width='stretch'):
+                submit = st.form_submit_button("Login", width='stretch')
+            if submit:
                 payload = {"role": st.session_state.role,
                            "slug": slug,
                            "email": email,
@@ -57,15 +58,17 @@ if not st.session_state.logged:
                     if res.status_code == 200:
                         st.session_state.token = res.json()["token"]
                         st.session_state.logged = True
-                    elif res.status_code = 401:
+                        st.rerun()
+                    elif res.status_code == 401:
                         st.error("Wrong Infos")
                 except Exception as e:
                     st.error(f"Backend Error {res.text}")
         else:
-            with st.from("Login", clear_on_submit=True):
+            with st.form("Login", clear_on_submit=True):
                 email = st.text_input("Email")
                 pwd = st.text_input("Password", type="password")
-            if st.form_submit_button("Login", width='stretch'):
+                submit = st.form_submit_button("Login", width='stretch')
+            if submit:
                 payload = {"role": st.session_state.role,
                            "email": email,
                            "password": pwd}
@@ -75,10 +78,11 @@ if not st.session_state.logged:
                         st.session_state.token = res.json()["token"]
                         st.session_state.headers = {"auth": f"Bearer {st.session_state.token}"}
                         st.session_state.logged = True
-                    elif res.status_code = 401:
+                        st.rerun()
+                    elif res.status_code == 401:
                         st.error("Wrong Infos")
                 except Exception as e:
-                    st.error(f"Backend Error {res.text}")
+                    st.error(f"Backend Error {e}")
     else:
         st.title("Create Your Company")
         with st.form("Enter Your Company's Infos"):
@@ -86,7 +90,7 @@ if not st.session_state.logged:
             with col1:
                 name = st.text_input("Company Name")
                 phone = st.text_input("Phone Number")
-                password1 = st.text("Password")
+                password1 = st.text_input("Password", type='password')
             with col2:
                 email = st.text_input("Email")
                 address = st.text_input("Address")
@@ -94,11 +98,20 @@ if not st.session_state.logged:
             if st.form_submit_button("Create Company", width='stretch'):
                 if all([name, phone, password1, email, address, password2]):
                     if password1 == password2:
-                        payload = {"name": name,
-                                   "phone_number": phone,
-                                   "email": email,
-                                   "password": password1,
-                                   "address": address}
+                        try:
+                            slug = requests.get(f"{API_URL_COMP}/{name}")
+                            if slug.status_code == 200:
+                                
+                                payload = {"name": name,
+                                        "phone_number": phone,
+                                        "email": email,
+                                        "password": password1,
+                                        "address": address,
+                                        "slug": slug.json()}
+                            else:
+                                st.error("Backend Error")
+                        except Exception as e:
+                            st.error(f"Backend Error: {e}")
                         try:
                             res = requests.post(API_URL_COMP, json=payload)
                             if res.status_code == 200:
@@ -110,7 +123,7 @@ if not st.session_state.logged:
                             elif res.status_code == 500:
                                 st.error("Couldn't Add Company")
                         except Exception as e:
-                            st.error(f"Backend Error {res.text}")
+                            st.error(f"Backend Error {e}")
                     else:
                         st.warning("Passwords Don't Match")
                         
@@ -199,10 +212,9 @@ if st.session_state.logged:
                         address = st.text_area("Address")
                         photo = st.file_uploader("Upload Photo", type=["png", "jpg", "jpeg"])
                         role = st.selectbox("Role", options=["Manager", "Employee"])
-                        pwd1 = st.text_input("Password", type="password")
                     with col2:
                         department = st.text_input("Department")
-                        role = st.text_input("Job Title / Role")
+                        job_name = st.text_input("Job Title / Role")
                         supervisor = st.text_input("Supervisor")
                         employment_type = st.selectbox("Employment Type", ["Full-time", "Part-time"])
                         start_date = st.date_input("Start Date")
@@ -210,7 +222,8 @@ if st.session_state.logged:
                         contract_type = st.selectbox("Contract Type", ["Employee", "Temporary", "Intern"])
                         contract_pdf = st.file_uploader("Upload Contract PDF", type=["pdf"])
                         emergency_phone = st.text_input("Emergency Contact Phone (Optional)")
-                        pwd2 = st.text_input("Password", type="password")
+                        pwd1 = st.text_input("Password", type="password", key="pwd1")
+                        pwd2 = st.text_input("Password", type="password", key="pwd2")
 
                     submit = st.form_submit_button("Add Employee")
         
@@ -228,6 +241,7 @@ if st.session_state.logged:
                             "photo": save_upload(photo, "uploads/photos"), 
                             "department": department,
                             "role": role,
+                            "job_name": job_name,
                             "password": pwd1,
                             "supervisor": supervisor if supervisor else None,
                             "employment_type": employment_type,       
@@ -235,13 +249,16 @@ if st.session_state.logged:
                             "status": status,
                             "contract_type": contract_type,
                             "contract_pdf": save_upload(contract_pdf, "uploads/contracts"),
-                            "emergency_phone": emergency_phone if emergency_phone else None
+                            "emergency_phone": emergency_phone if emergency_phone else None,
+                            "company_id": st.session_state.user["company_id"]
                         }
                         try:
-                            response = requests.post(API_URL, json=emp_payload, st.session_state.headers=headers)
+                            response = requests.post(API_URL, json=emp_payload, headers=st.session_state.headers)
                             if response.status_code == 200:
                                 st.success("Employee Added Successfully!")
                                 st.dataframe(response.json())
+                            elif response.status_code == 422:
+                                st.json(response.json())
                         except Exception as e:
                             st.error(f"Error: {e}")
                     else:
@@ -273,7 +290,7 @@ if st.session_state.logged:
         
             with listall:
                 try:
-                    response = requests.get(f"{API_URL}/dataframe", headers=st.session_sate.headers)
+                    response = requests.get(f"{API_URL}/dataframe", headers=st.session_state.headers)
                     if response.status_code == 200:
                         st.dataframe(response.json())
                     elif response.status_code == 404:

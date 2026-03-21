@@ -28,11 +28,12 @@ class employment_type(str, Enum):
     Part_time = "Part-time"
 
 class role(str, Enum):
-    manager = "manager"
-    employee = "employee"
+    manager = "Manager"
+    employee = "Employee"
     
 class Employee(BaseModel):
     id: UUID = Field(default_factory=uuid4)
+    job_name: str | None
     company_id: UUID
     first_name: str
     last_name: str
@@ -45,11 +46,11 @@ class Employee(BaseModel):
     email: EmailStr
     password: str
     address: str
-    photo: str
+    photo: str | None
     department: str
     start_date: date
-    contract_pdf: str
+    contract_pdf: str | None
     emergency_phone: PhoneNumber | None
     employment_type: employment_type
-    contract_type: contract_type
+    contract_type: contract_type 
     status: status

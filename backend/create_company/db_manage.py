@@ -1,21 +1,20 @@
 from sqlalchemy import Table, Column, String, MetaData, insert, DateTime, select
 from sqlalchemy.dialects.postgresql import UUID
 from .model import Company
-from db.db_connect import db_connect
+from db.db_connect import db_connect, metadata
 from datetime import datetime
 
 eng = db_connect()
-metadata = MetaData()
 
-company_table = Table(
+company = Table(
     "company",
     metadata,
     Column("id", UUID(as_uuid=True), primary_key=True),
-    Column("name", String, nallable=False)
+    Column("name", String, nullable=False),
     Column("email", String, nullable=False, unique=True),
     Column("password", String, nullable=False),
-    Column("address", String | None, nullable=True),
-    Column("phone_number", String | None, nullable=True),
+    Column("address", String, nullable=True),
+    Column("phone_number", String, nullable=True),
     Column("slug", String, nullable=False, unique=True),
     Column("created_at", DateTime, default=datetime.utcnow),
 )
@@ -23,21 +22,22 @@ company_table = Table(
 def init():
     metadata.create_all(eng, checkfirst=True)
 
-def insert_company(company: Company):
+def insert_company(company_: Company):
     with eng.connect() as conn:
         conn.execute(
-            company_table.insert().values(
-                id=company.id,
-                email=company.email,
-                password=company.password,
-                address=company.address,
-                phone_number=company.phone_number,
-                slug=company.slug,
-                created_at=datetime.utcnow()
+            insert(company).values(
+                name=company_.name,
+                id=company_.id,
+                email=company_.email,
+                password=company_.password,
+                address=company_.address,
+                phone_number=company_.phone_number,
+                slug=company_.slug,
+                created_at=company_.created_at
             )
         )
         conn.commit()
-        return company.id
+        return company_.id
 
 def check_slug(slug: str):
     with eng.connect() as conn:

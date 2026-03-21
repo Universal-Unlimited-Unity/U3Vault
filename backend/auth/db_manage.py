@@ -1,13 +1,15 @@
 from sqlalchemy import select
-from passlib_context import CryptContext
+from passlib.context import CryptContext
 from db.db_connect import db_connect
 from datetime import datetime, timedelta
 from jose import jwt
 from dotenv import load_dotenv
 import os
+from employees.db_manage import employees
+from create_company.db_manage import company
 
 load_dotenv()
-pwd_context = CryptContext(shemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 eng = db_connect()
 
 TOKEN_EXP_MIN = os.getenv("TOKEN_EXP_MIN")
@@ -17,17 +19,17 @@ ALGO = os.getenv("ALGO")
 def admin_auth(email: str, pwd: str):
   with eng.connect() as conn:
     stmt = select(company).where(company.c.email == email)
-    company = conn.execute(stmt).fetchone()
-    if not company:
+    company_ = conn.execute(stmt).fetchone()
+    if not company_:
       return None
-    if not pwd_context.verify(password, company.password):
+    if not pwd_context.verify(pwd, company_.password):
       return None
     payload = {
       "role": "Admin",
-      "company_id": str(company.id),
+      "company_id": str(company_.id),
       "exp": datetime.utcnow() + timedelta(minutes=int(TOKEN_EXP_MIN))
       }
-    return jwt.encode(payload, TOKEN_KEY, algorithms=[ALGO])
+    return jwt.encode(payload, TOKEN_KEY, algorithm=ALGO)
 
 def reg_auth(slug: str, email: str, pwd: str):
   with eng.connect() as conn:
@@ -39,12 +41,12 @@ def reg_auth(slug: str, email: str, pwd: str):
     user = conn.execute(stmt).fetchone()
     if not user:
       return None
-    if not pwd_context.verify(password, user.password):
+    if not pwd_context.verify(pwd, user.password):
       return None
     payload = {
       "id": str(user.id),
       "role": user.role,
       "company_id": str(user.company_id),
-      "exp": datetime.utcnow() + timedelta(minutes:int(TOKEN_EXP_MIN))
+      "exp": datetime.utcnow() + timedelta(minutes=int(TOKEN_EXP_MIN))
       }
-    return jwt.encode(payload, TOKEN_KEY, algorithms=[ALGO])
+    return jwt.encode(payload, TOKEN_KEY, algorithm=ALGO)

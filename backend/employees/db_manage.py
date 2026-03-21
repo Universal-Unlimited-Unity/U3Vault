@@ -1,4 +1,4 @@
-from db.db_connect import db_connect
+from db.db_connect import db_connect, metadata
 from .model import Employee
 from sqlalchemy import insert, Table, Column, MetaData, String, Date, select, delete, ForeignKey, UniqueConstraint
 import uuid
@@ -7,7 +7,6 @@ from sqlalchemy.engine import CursorResult
 from create_company.db_manage import company
 
 eng = db_connect()
-metadata = MetaData()
 
 employees = Table(
     "employees",
@@ -33,6 +32,7 @@ employees = Table(
     Column("employment_type", String, nullable=False),
     Column("contract_type", String, nullable=False),
     Column("status", String, nullable=False),
+    Column("job_name", String, nullable=True),
     UniqueConstraint("company_id", "email")
 )
 
@@ -62,6 +62,9 @@ def add(emp: Employee) -> Employee:
             employment_type=emp.employment_type.value,
             contract_type=emp.contract_type.value,
             status=emp.status.value,
+            company_id=emp.company_id,
+            password=emp.password,
+            job_name=emp.job_name
             )  
         conn.execute(stmt)
         conn.commit()

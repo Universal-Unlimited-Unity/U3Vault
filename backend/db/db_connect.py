@@ -11,5 +11,7 @@ def db_connect():
     eng = create_engine(db)
     return eng
 
+metadata = MetaData()
+
 
 

@@ -10,3 +10,5 @@ pandas
 seaborn
 matplotlib
 fpdf
+python-jose[cryptography]
+passlib
