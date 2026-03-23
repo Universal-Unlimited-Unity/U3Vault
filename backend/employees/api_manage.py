@@ -6,15 +6,10 @@ from jose import jwt
 from dotenv import load_dotenv
 import os
 from passlib.context import CryptContext
+from shared.func import lazy
 router = APIRouter(prefix="/employees", tags=["employees"])
-load_dotenv()
-TOKEN_KEY = os.getenv("TOKEN_KEY")
-ALGO = os.getenv("ALGO")
 
-def lazy(auth):
-    token = auth.split()[1]
-    user = jwt.decode(token, TOKEN_KEY, ALGO)
-    return user
+load_dotenv()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")   
 @router.post("", response_model=Employee)

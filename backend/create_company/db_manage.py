@@ -52,3 +52,8 @@ def generate_slug(name: str):
         count += 1
     return slug
         
+def cmp_name(id: str):
+    with eng.connect() as conn:
+        stmt = select(company.c.name).where(company.c.id == id)
+        row = conn.execute(stmt).fetchone()
+        return row.name

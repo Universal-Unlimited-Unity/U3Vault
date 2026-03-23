@@ -1,9 +1,9 @@
-from fastapi import APIRouter, HTTPException, Path
-from .db_manage import insert_company, check_slug, generate_slug
+from fastapi import APIRouter, HTTPException, Path, Header
+from .db_manage import insert_company, check_slug, generate_slug, cmp_name
 from .model import Company
 from passlib.context import CryptContext
 from typing import Annotated
-
+from shared.func import lazy
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 router = APIRouter(prefix="/company", tags=["company"])
@@ -19,3 +19,8 @@ async def create_company_api(company: Company):
 async def gen_slug(name: Annotated[str, Path()]):
     slug = generate_slug(name)
     return slug
+
+@router.get("/")
+async def get_cmp_name(auth: Annotated[str, Header()]):
+    user = lazy(auth)
+    return cmp_name(user["company_id"])

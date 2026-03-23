@@ -17,10 +17,11 @@ API_URL_AUTH = os.getenv("API_URL_AUTH")
 API_URL_COMP = os.getenv("API_URL_COMP")
 TOKEN_KEY = os.getenv("TOKEN_KEY")
 ALGO = os.getenv("ALGO")
+root = os.getenv("UPLOADS_ROOT", "/myapp/uploads")
+
 def save_upload(upload: UploadedFile, dir: str) -> str | None:
     if upload is None:
         return None
-    root = os.getenv("UPLOADS_ROOT", "/myapp/uploads")
     upload_dir = os.path.join(root, dir)
     os.makedirs(upload_dir, mode=0o755, exist_ok=True)
     ext = upload.name.split(".")[-1]
@@ -57,6 +58,7 @@ if not st.session_state.logged:
                     res = requests.post(f"{API_URL_AUTH}/login", json=payload)
                     if res.status_code == 200:
                         st.session_state.token = res.json()["token"]
+                        st.session_state.headers = {"auth": f"Bearer {st.session_state.token}"}
                         st.session_state.logged = True
                         st.rerun()
                     elif res.status_code == 401:
@@ -85,7 +87,7 @@ if not st.session_state.logged:
                     st.error(f"Backend Error {e}")
     else:
         st.title("Create Your Company")
-        with st.form("Enter Your Company's Infos"):
+        with st.form("Enter Your Company's Infos", clear_on_submit=True):
             col1, col2 = st.columns(2)
             with col1:
                 name = st.text_input("Company Name")
@@ -118,8 +120,6 @@ if not st.session_state.logged:
                                 st.success("Company Created! You Can Now Use Your Email And Password To Login")
                                 st.session_state.choice = "Login"
                                 st.session_state.role = "Admin"
-                                time.sleep(5)
-                                st.rerun()
                             elif res.status_code == 500:
                                 st.error("Couldn't Add Company")
                         except Exception as e:
@@ -131,34 +131,57 @@ if not st.session_state.logged:
                     st.warning("You Must Fill All Fields")
                     
 if st.session_state.logged:
-    st.session_state.user = jwt.decode(st.session_state.token, TOKEN_KEY, algorithms=[ALGO])
+    st.session_state.user = jwt.decode(
+        st.session_state.token, TOKEN_KEY, algorithms=[ALGO]
+    )
+
     if st.session_state.user["role"] == "Employee":
+
         if "info" not in st.session_state:
             st.session_state.info = None
+
         try:
             info = requests.get(f"{API_URL}/{st.session_state.user['id']}")
             if info.status_code == 200:
                 if not st.session_state.info:
                     st.session_state.info = Employee(**info.json())
         except:
-            st.error(f"Backend Error")
+            st.error("Backend Error")
+
         if st.session_state.info:
-            st.title(f"Welcome {st.session_state.info.first_name} {st.session_state.info.last_name}")
-            st.title(f"You Are {st.session_state.info.role.value}")
-    if st.session_state.user["role"] == "Manager":
-        if "info" not in st.session_state:
-            st.session_state.info = None
-        try:
-            info = requests.get(f"{API_URL}/{st.session_state.user['id']}")
-            if info.status_code == 200:
-                if not st.session_state.info:
-                    st.session_state.info = Employee(**info.json())
-        except Exception as e:
-            st.error(f"Backend Error {e}")
-        
-        if st.session_state.info:
-            st.title(f"Welcome {st.session_state.info.first_name} {st.session_state.info.last_name}")
-            st.title(f"You Are {st.session_state.info.role.value}")
+
+            st.image("front.png", width=160)
+
+            col1, col2 = st.columns([1, 3])
+
+            with col1:
+                img = os.path.join(root, st.session_state.info.photo) if st.session_state.info.photo else "default.png"
+                st.image(img, width=120)
+
+            with col2:
+                st.markdown(f"""
+                ## Welcome {st.session_state.info.first_name} {st.session_state.info.last_name}
+                **Role:** {st.session_state.info.role.value}
+                """)
+
+            st.markdown("---")
+
+            col1, col2 = st.columns(2)
+
+            
+            cmp_name = requests.get(API_URL_COMP, headers=st.session_state.headers)
+            if cmp_name.status_code == 200:
+                st.session_state.cmp_name = cmp_name.json()
+            elif cmp_name.status_code == 404:
+                st.error("Something Went Wrong")
+            with col1:
+                st.info(f"📧 Email: {st.session_state.info.email}")
+                st.info(f"📱 Phone: {st.session_state.info.phone}")
+
+            with col2:
+                st.info(f"🏢 Department: {st.session_state.info.department}")
+                st.info(f"Company: {st.session_state.cmp_name}")
+                
     if st.session_state.user["role"] == "Admin":
         
         st.sidebar.title("Navigation")
