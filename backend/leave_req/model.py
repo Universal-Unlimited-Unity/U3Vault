@@ -8,8 +8,10 @@ class status(str, Enum):
   rejected = "Rejected"
   
 class request(BaseModel):
-  req_id: UUID =  Field(default_factory=uuid4)
+  id: UUID =  Field(default_factory=uuid4)
   emp_id: UUID
+  cmp_id: UUID
   reason: str
   doc: str | None
   status: status
+  
