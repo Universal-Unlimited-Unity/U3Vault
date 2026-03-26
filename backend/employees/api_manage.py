@@ -43,7 +43,8 @@ async def listall_api(auth: Annotated[str, Header()]):
         return result
 
 @router.get("/{id}", response_model=Employee)
-async def select_emp_api(id: Annotated[str, Path()]):
+async def select_emp_api(id: Annotated[str, Path()], auth: Annotated[str, Header()]):
+    user = lazy(auth)
     return select_emp(id)
     
 @router.delete("/{id}", response_model=Employee)
