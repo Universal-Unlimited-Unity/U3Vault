@@ -3,7 +3,7 @@ from .model import request
 from .db_manage import get_req_by_status, add_req
 from shared.func import lazy 
 from typing import Annotated
-router = APIRouter(prefix="/requests", tags=["/requests"])
+router = APIRouter(prefix="/requests", tags=["requests"])
 
 router.post("/")
 async def insert_res(request_: Annotated[request, Body()], auth: Annotated[str, Header()]):
