@@ -14,7 +14,7 @@ async def insert_res(request_: Annotated[request, Body()], auth: Annotated[str, 
     raise HTTPException(status_code=401)
 
 router.get("/")
-async def get_req(status : Annotated[str | None, Query()] = None, auth: Annotated[str, Header()]):
+async def get_req(status : Annotated[str, Query()], auth: Annotated[str, Header()]):
   user = lazy(auth)
   if user["role"] = "Employee":
     return get_req_by_status(status, user["id"])
