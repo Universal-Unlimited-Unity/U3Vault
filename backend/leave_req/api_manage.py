@@ -1,15 +1,23 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Body, Header
 from .model import request
-from .db_manage import def get_req_by_status
+from .db_manage import get_req_by_status, add_req
 from shared.func import lazy 
+from typing import Annotated
 router = APIRouter(prefix="/requests", tags=["/requests"])
 
 router.post("/")
-async def insert_res(request_:request, auth: str):
+async def insert_res(request_: Annotated[request, Body()], auth: Annotated[str, Header()]):
   user = lazy(auth)
   if user["role"] == "Employee":
-    get_req_by_status(request_)
+    add_req(request_)
   else:
     raise HTTPException(status_code=401)
+
+router.get("/")
+async def get_req(status : Annotated[str | None, Query()] = None, auth: Annotated[str, Header()]):
+  user = lazy(auth)
+  if user["role"] = "Employee":
+    return get_req_by_status(status, user["id"])
+  
     
   
