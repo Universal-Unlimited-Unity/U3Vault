@@ -1,6 +1,6 @@
 from db.db_connect import db_connect, metadata
 from .model import request
-from sqlalchemy import insert, Table, Column, String, Date, select, delete, ForeignKey, UniqueConstraint
+from sqlalchemy import insert, Table, Column, String, Date, select, delete, ForeignKey, UniqueConstraint, Datetime
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from create_company.db_manage import company
@@ -16,7 +16,8 @@ request = Table(
   Column("cmp_id", UUID(as_uuid=True), ForeignKey("employees.id"), nullable=False),
   Column("reason", String, nullable=False),
   Column("doc", String, nullable=True),
-  Column("status", String, nullable=False)
+  Column("status", String, nullable=False),
+  Column("date", Datetime, nullable=False) 
 )
 
 def init():
@@ -28,6 +29,12 @@ def add_req(request: request):
     conn.execute(stmt)
     conn.commit()
 
-def get_req_by_status(status:str):
+def get_req_by_status(status: str | None = None, id: str):
   with eng.connect() as conn:
-    stmt = select(request). // i will finish later
+    if status:
+      stmt = select(request.c.date, request.c.reason, request.c.status).where(request.c.status == status, request.c.emp_id == id)
+    else:
+      stmt = select(request.c.date, request.c.reason, request.c.status).where(request.c.emp_id == id)
+      
+    reqs = conn.execute(stmt).mappings().fetchall()
+    return reqs
