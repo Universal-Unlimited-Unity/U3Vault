@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from uuid import UUID, uuid4
 from enum import Enum
-
+from datetime import datetime
 class status(str, Enum):
   pening = "Pending"
   approved = "Approved"
@@ -14,4 +14,4 @@ class request(BaseModel):
   reason: str
   doc: str | None
   status: status
-  
+  date: datetime = Field(default_factory=datetime.utcnow)
