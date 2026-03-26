@@ -29,9 +29,9 @@ def add_req(request: request):
     conn.execute(stmt)
     conn.commit()
 
-def get_req_by_status(status: str | None = None, id: str):
+def get_req_by_status(status: str, id: str):
   with eng.connect() as conn:
-    if status:
+    if status.title() != "All":
       stmt = select(request.c.date, request.c.reason, request.c.status).where(request.c.status == status, request.c.emp_id == id)
     else:
       stmt = select(request.c.date, request.c.reason, request.c.status).where(request.c.emp_id == id)
