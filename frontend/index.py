@@ -18,6 +18,7 @@ API_URL_COMP = os.getenv("API_URL_COMP")
 TOKEN_KEY = os.getenv("TOKEN_KEY")
 ALGO = os.getenv("ALGO")
 root = os.getenv("UPLOADS_ROOT", "/myapp/uploads")
+API_URL_REQ = os.getenv("API_URL_REQ")
 
 def save_upload(upload: UploadedFile, dir: str) -> str | None:
     if upload is None:
@@ -136,52 +137,88 @@ if st.session_state.logged:
     )
 
     if st.session_state.user["role"] == "Employee":
+        if "page" not in st.session_state:
+            st.session_state.page = "Home"
 
-        if "info" not in st.session_state:
-            st.session_state.info = None
+        st.sidebar("Menu")
 
-        try:
-            info = requests.get(f"{API_URL}/{st.session_state.user['id']}")
-            if info.status_code == 200:
-                if not st.session_state.info:
-                    st.session_state.info = Employee(**info.json())
-        except:
-            st.error("Backend Error")
+        if st.sidebar.button("Home"):
+            st.session_state.page = "Home"
+        if st.sidebar.button("Leave Requests"):
+            st.session_state.page = "Leave Requests"
 
-        if st.session_state.info:
+        if st.session_state.page = "Home":
 
-            st.image("front.png", width=160)
-
-            col1, col2 = st.columns([1, 3])
-
-            with col1:
-                img = os.path.join(root, st.session_state.info.photo) if st.session_state.info.photo else "default.png"
-                st.image(img, width=120)
-
-            with col2:
-                st.markdown(f"""
-                ## Welcome {st.session_state.info.first_name} {st.session_state.info.last_name}
-                **Role:** {st.session_state.info.role.value}
-                """)
-
-            st.markdown("---")
-
-            col1, col2 = st.columns(2)
-
-            
-            cmp_name = requests.get(API_URL_COMP, headers=st.session_state.headers)
-            if cmp_name.status_code == 200:
-                st.session_state.cmp_name = cmp_name.json()
-            elif cmp_name.status_code == 404:
-                st.error("Something Went Wrong")
-            with col1:
-                st.info(f"📧 Email: {st.session_state.info.email}")
-                st.info(f"📱 Phone: {st.session_state.info.phone}")
-
-            with col2:
-                st.info(f"🏢 Department: {st.session_state.info.department}")
-                st.info(f"Company: {st.session_state.cmp_name}")
+            if "info" not in st.session_state:
+                st.session_state.info = None
+    
+            try:
+                info = requests.get(f"{API_URL}/{st.session_state.user['id']}")
+                if info.status_code == 200:
+                    if not st.session_state.info:
+                        st.session_state.info = Employee(**info.json())
+            except:
+                st.error("Backend Error")
+    
+            if st.session_state.info:
+    
+                st.image("front.png", width=160)
+    
+                col1, col2 = st.columns([1, 3])
+    
+                with col1:
+                    img = os.path.join(root, st.session_state.info.photo) if st.session_state.info.photo else "default.png"
+                    st.image(img, width=120)
+    
+                with col2:
+                    st.markdown(f"""
+                    ## Welcome {st.session_state.info.first_name} {st.session_state.info.last_name}
+                    **Role:** {st.session_state.info.role.value}
+                    """)
+    
+                st.markdown("---")
+    
+                col1, col2 = st.columns(2)
+    
                 
+                cmp_name = requests.get(API_URL_COMP, headers=st.session_state.headers)
+                if cmp_name.status_code == 200:
+                    st.session_state.cmp_name = cmp_name.json()
+                elif cmp_name.status_code == 404:
+                    st.error("Something Went Wrong")
+                with col1:
+                    st.info(f"📧 Email: {st.session_state.info.email}")
+                    st.info(f"📱 Phone: {st.session_state.info.phone}")
+    
+                with col2:
+                    st.info(f"🏢 Department: {st.session_state.info.department}")
+                    st.info(f"Company: {st.session_state.cmp_name}")
+                    
+            if st.session_state.page = "Requests":
+                status = st.selectbox("Status", options=["All", "Pending", "Approved", "Rejected"])
+                with spinner("Loading Requests"):
+                    try:
+                        res = requests.get(API_URL_REQ, params=status, headers=st.session_state.headers)
+                    except Exception as e:
+                        st.error(f"Backend Error: {e}")
+                    if res.status_code == 200:
+                        reqs = res.json() 
+                        col1, col2, col3 = st.columns(3)
+                        for req in reqs:
+                            with col1:
+                                st.write(req["date"])
+                            with col2:
+                                st.write(req["req"])
+                            with col3:
+                                if req["status"] == "Approved":
+                                    st.success("Approved")
+                                elif req["status"] == "Pending":
+                                    st.warning("Pending")
+                                else:
+                                    st.error("Rejected")
+                    elif res.status_code == 401 or res.status_code == 404:
+                        st.error("Something Went Wrong")
+                    
     if st.session_state.user["role"] == "Admin":
         
         st.sidebar.title("Navigation")
