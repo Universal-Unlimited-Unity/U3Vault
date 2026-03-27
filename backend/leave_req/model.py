@@ -15,3 +15,5 @@ class request(BaseModel):
   doc: str | None
   status: status | None = None
   date: datetime = Field(default_factory=datetime.utcnow)
+  start_date: datetime
+  end_date: datetime
