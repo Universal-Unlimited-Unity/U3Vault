@@ -17,7 +17,7 @@ API_URL_AUTH = os.getenv("API_URL_AUTH")
 API_URL_COMP = os.getenv("API_URL_COMP")
 TOKEN_KEY = os.getenv("TOKEN_KEY")
 ALGO = os.getenv("ALGO")
-root = os.getenv("UPLOADS_ROOT", "/myapp/uploads")
+root = os.getenv("UPLOADS_ROOT", "/myapp/uploads/")
 API_URL_REQ = os.getenv("API_URL_REQ")
 
 def save_upload(upload: UploadedFile, dir: str) -> str | None:
@@ -194,30 +194,56 @@ if st.session_state.logged:
                     st.info(f"🏢 Department: {st.session_state.info.department}")
                     st.info(f"Company: {st.session_state.cmp_name}")
                     
-            if st.session_state.page = "Requests":
-                status = st.selectbox("Status", options=["All", "Pending", "Approved", "Rejected"])
-                with spinner("Loading Requests"):
-                    try:
-                        res = requests.get(API_URL_REQ, params=status, headers=st.session_state.headers)
-                    except Exception as e:
-                        st.error(f"Backend Error: {e}")
-                    if res.status_code == 200:
-                        reqs = res.json() 
-                        col1, col2, col3 = st.columns(3)
-                        for req in reqs:
-                            with col1:
-                                st.write(req["date"])
-                            with col2:
-                                st.write(req["req"])
-                            with col3:
-                                if req["status"] == "Approved":
-                                    st.success("Approved")
-                                elif req["status"] == "Pending":
-                                    st.warning("Pending")
-                                else:
-                                    st.error("Rejected")
-                    elif res.status_code == 401 or res.status_code == 404:
-                        st.error("Something Went Wrong")
+            if st.session_state.page == "Requests":
+                create_res, check_req = st.tabs(2)
+                with create_req:
+                    with st.form("Leave Request", clear_on_submit=True):
+                        reason = st.text_input("Reason", placeholder="e.g. sick")
+                        starts_date = st.date_input("Start Date")
+                        end_date = st.date_input("End Date")
+                        doc = st.file_uploader("Upload Justification", type=["pdf"])
+                        submit = st.form_submit_button("Submit Request")
+                    if submit:
+                        payload = {"reason": reason,
+                                   "start_date": start_date,
+                                   "end_date": end_date,
+                                   "status": "Pending",
+                                   "cmp_id": user["company_id"],
+                                   "emp_id": user["id"],
+                                   "doc": save_upload(doc, "requests")}
+                        try:
+                            res = requests.post(API_URL_REQ, json=payload, headers=st.session_state.headers)
+                        except Exception as e:
+                            st.error(f"Backend Error: {e}")
+                        if res.status_code == 200:
+                            st.success("Request Submited Successfully, Check It's Status In The Other Tab")
+                        elif res.status_code in ["401", "404"]:
+                            st.error("Something Went Wrong")
+                with check_req:
+                            
+                    status = st.selectbox("Status", options=["All", "Pending", "Approved", "Rejected"])
+                    with spinner("Loading Requests"):
+                        try:
+                            res = requests.get(API_URL_REQ, params=status, headers=st.session_state.headers)
+                        except Exception as e:
+                            st.error(f"Backend Error: {e}")
+                        if res.status_code == 200:
+                            reqs = res.json() 
+                            col1, col2, col3 = st.columns(3)
+                            for req in reqs:
+                                with col1:
+                                    st.write(req["date"])
+                                with col2:
+                                    st.write(req["req"])
+                                with col3:
+                                    if req["status"] == "Approved":
+                                        st.success("Approved")
+                                    elif req["status"] == "Pending":
+                                        st.warning("Pending")
+                                    else:
+                                        st.error("Rejected")
+                        elif res.status_code == 401 or res.status_code == 404:
+                            st.error("Something Went Wrong")
                     
     if st.session_state.user["role"] == "Admin":
         
@@ -307,7 +333,7 @@ if st.session_state.logged:
                             "phone": phone,
                             "email": email,
                             "address": address,
-                            "photo": save_upload(photo, "uploads/photos"), 
+                            "photo": save_upload(photo, "photos"), 
                             "department": department,
                             "role": role,
                             "job_name": job_name,
@@ -317,7 +343,7 @@ if st.session_state.logged:
                             "start_date": str(start_date),
                             "status": status,
                             "contract_type": contract_type,
-                            "contract_pdf": save_upload(contract_pdf, "uploads/contracts"),
+                            "contract_pdf": save_upload(contract_pdf, "contracts"),
                             "emergency_phone": emergency_phone if emergency_phone else None,
                             "company_id": st.session_state.user["company_id"]
                         }
