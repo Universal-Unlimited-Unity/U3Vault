@@ -16,8 +16,10 @@ request = Table(
   Column("cmp_id", UUID(as_uuid=True), ForeignKey("employees.id"), nullable=False),
   Column("reason", String, nullable=False),
   Column("doc", String, nullable=True),
-  Column("status", String, nullable=False),
-  Column("date", Datetime, nullable=False) 
+  Column("status", String, nullable=True),
+  Column("date", Datetime, nullable=False),
+  Column("start_date", Datetime, nullable=False),
+  Column("end_date", Datetime, nullable=False)
 )
 
 def init():
