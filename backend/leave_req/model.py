@@ -13,5 +13,5 @@ class request(BaseModel):
   cmp_id: UUID
   reason: str
   doc: str | None
-  status: status
+  status: status | None = None
   date: datetime = Field(default_factory=datetime.utcnow)
