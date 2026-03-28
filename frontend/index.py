@@ -219,29 +219,27 @@ if st.session_state.logged:
                         st.success("Request Submited Successfully, Check It's Status In The Other Tab")
                     elif res.status_code in ["401", "404"]:
                         st.error("Something Went Wrong")
-            with check_req:
-                        
+            with check_req: 
                 status = st.selectbox("Status", options=["All", "Pending", "Approved", "Rejected"])
                 with st.spinner("Loading Requests"):
                     try:
                         res = requests.get(API_URL_REQ, params={"status": status}, headers=st.session_state.headers)
                     except Exception as e:
                         st.error(f"Backend Error: {e}")
+                    
                     if res.status_code == 200:
                         reqs = res.json() 
-                        col1, col2, col3 = st.columns(3)
                         for req in reqs:
+                            col1, col2, col3 = st.columns([1, 2, 0.8])
                             with col1:
-                                st.write(req["date"][:10])
+                                st.write(f"`{req['date'][:10]}`")
                             with col2:
                                 st.write(req["reason"])
                             with col3:
-                                if req["status"] == "Approved":
-                                    st.success("Approved")
-                                elif req["status"] == "Pending":
-                                    st.warning("Pending")
-                                else:
-                                    st.error("Rejected")
+                                s = req["status"]
+                                color = "green" if s == "Approved" else "orange" if s == "Pending" else "red"
+                                st.markdown(f":{color}[**{s}**]")
+                            st.divider()
                     elif res.status_code == 401 or res.status_code == 404:
                         st.error("Something Went Wrong")
                     
