@@ -11,7 +11,7 @@ eng = db_connect()
 request = Table(
   "request",
   metadata,
-  Column("req_id", UUID(as_uuid=True), primary_key=True, nullable=False),
+  Column("id", UUID(as_uuid=True), primary_key=True, nullable=False),
   Column("emp_id", UUID(as_uuid=True), ForeignKey("company.id"), nullable=False),
   Column("cmp_id", UUID(as_uuid=True), ForeignKey("employees.id"), nullable=False),
   Column("reason", String, nullable=False),
@@ -25,9 +25,9 @@ request = Table(
 def init():
   metadata.create_all(eng, checkfirst=True)
 
-def add_req(request: request_model):
+def add_req(request_: request_model):
   with eng.connect() as conn:
-    stmt = insert(request_).values(request_.model_dump())
+    stmt = insert(request).values(request_.model_dump())
     conn.execute(stmt)
     conn.commit()
 

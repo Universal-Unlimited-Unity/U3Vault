@@ -194,56 +194,56 @@ if st.session_state.logged:
                     st.info(f"🏢 Department: {st.session_state.info.department}")
                     st.info(f"Company: {st.session_state.cmp_name}")
                     
-            if st.session_state.page == "Requests":
-                create_res, check_req = st.tabs(2)
-                with create_req:
-                    with st.form("Leave Request", clear_on_submit=True):
-                        reason = st.text_input("Reason", placeholder="e.g. sick")
-                        starts_date = st.date_input("Start Date")
-                        end_date = st.date_input("End Date")
-                        doc = st.file_uploader("Upload Justification", type=["pdf"])
-                        submit = st.form_submit_button("Submit Request")
-                    if submit:
-                        payload = {"reason": reason,
-                                   "start_date": start_date,
-                                   "end_date": end_date,
-                                   "status": "Pending",
-                                   "cmp_id": user["company_id"],
-                                   "emp_id": user["id"],
-                                   "doc": save_upload(doc, "requests")}
-                        try:
-                            res = requests.post(API_URL_REQ, json=payload, headers=st.session_state.headers)
-                        except Exception as e:
-                            st.error(f"Backend Error: {e}")
-                        if res.status_code == 200:
-                            st.success("Request Submited Successfully, Check It's Status In The Other Tab")
-                        elif res.status_code in ["401", "404"]:
-                            st.error("Something Went Wrong")
-                with check_req:
-                            
-                    status = st.selectbox("Status", options=["All", "Pending", "Approved", "Rejected"])
-                    with spinner("Loading Requests"):
-                        try:
-                            res = requests.get(API_URL_REQ, params=status, headers=st.session_state.headers)
-                        except Exception as e:
-                            st.error(f"Backend Error: {e}")
-                        if res.status_code == 200:
-                            reqs = res.json() 
-                            col1, col2, col3 = st.columns(3)
-                            for req in reqs:
-                                with col1:
-                                    st.write(req["date"])
-                                with col2:
-                                    st.write(req["req"])
-                                with col3:
-                                    if req["status"] == "Approved":
-                                        st.success("Approved")
-                                    elif req["status"] == "Pending":
-                                        st.warning("Pending")
-                                    else:
-                                        st.error("Rejected")
-                        elif res.status_code == 401 or res.status_code == 404:
-                            st.error("Something Went Wrong")
+        if st.session_state.page == "Leave Requests":
+            create_req, check_req = st.tabs(["Create Request", "Check Request"])
+            with create_req:
+                with st.form("Leave Request"):#, clear_on_submit=True):
+                    reason = st.text_input("Reason", placeholder="e.g. sick")
+                    start_date = st.date_input("Start Date")
+                    end_date = st.date_input("End Date")
+                    doc = st.file_uploader("Upload Justification", type=["pdf"])
+                    submit = st.form_submit_button("Submit Request")
+                if submit:
+                    payload = {"reason": reason,
+                                "start_date": str(start_date),
+                                "end_date": str(end_date),
+                                "status": "Pending",
+                                "cmp_id": st.session_state.user["company_id"],
+                                "emp_id": st.session_state.user["id"],
+                                "doc": save_upload(doc, "requests")}
+                    try:
+                        res = requests.post(API_URL_REQ, json=payload, headers=st.session_state.headers)
+                    except Exception as e:
+                        st.error(f"Backend Error: {e}")
+                    if res.status_code == 200:
+                        st.success("Request Submited Successfully, Check It's Status In The Other Tab")
+                    elif res.status_code in ["401", "404"]:
+                        st.error("Something Went Wrong")
+            with check_req:
+                        
+                status = st.selectbox("Status", options=["All", "Pending", "Approved", "Rejected"])
+                with st.spinner("Loading Requests"):
+                    try:
+                        res = requests.get(API_URL_REQ, params=status, headers=st.session_state.headers)
+                    except Exception as e:
+                        st.error(f"Backend Error: {e}")
+                    if res.status_code == 200:
+                        reqs = res.json() 
+                        col1, col2, col3 = st.columns(3)
+                        for req in reqs:
+                            with col1:
+                                st.write(req["date"])
+                            with col2:
+                                st.write(req["req"])
+                            with col3:
+                                if req["status"] == "Approved":
+                                    st.success("Approved")
+                                elif req["status"] == "Pending":
+                                    st.warning("Pending")
+                                else:
+                                    st.error("Rejected")
+                    elif res.status_code == 401 or res.status_code == 404:
+                        st.error("Something Went Wrong")
                     
     if st.session_state.user["role"] == "Admin":
         
