@@ -20,7 +20,7 @@ async def gen_slug(name: Annotated[str, Path()]):
     slug = generate_slug(name)
     return slug
 
-@router.get("/")
+@router.get("")
 async def get_cmp_name(auth: Annotated[str, Header()]):
     user = lazy(auth)
     return cmp_name(user["company_id"])

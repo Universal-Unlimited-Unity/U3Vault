@@ -153,12 +153,12 @@ if st.session_state.logged:
                 st.session_state.info = None
     
             try:
-                info = requests.get(f"{API_URL}/{st.session_state.user['id']}")
+                info = requests.get(f"{API_URL}/{st.session_state.user['id']}", headers=st.session_state.headers)
                 if info.status_code == 200:
                     if not st.session_state.info:
                         st.session_state.info = Employee(**info.json())
-            except:
-                st.error("Backend Error")
+            except Exception as e:
+                st.error(f"Backend Error {e}")
     
             if st.session_state.info:
     
