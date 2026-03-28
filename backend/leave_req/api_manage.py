@@ -1,11 +1,11 @@
-from fastapi import APIRouter, HTTPException, Body, Header
+from fastapi import APIRouter, HTTPException, Body, Header, Query
 from .model import request
 from .db_manage import get_req_by_status, add_req
 from shared.func import lazy 
 from typing import Annotated
 router = APIRouter(prefix="/requests", tags=["requests"])
 
-router.post("/")
+@router.post("/")
 async def insert_res(request_: Annotated[request, Body()], auth: Annotated[str, Header()]):
   user = lazy(auth)
   if user["role"] == "Employee":
@@ -13,10 +13,10 @@ async def insert_res(request_: Annotated[request, Body()], auth: Annotated[str, 
   else:
     raise HTTPException(status_code=401)
 
-router.get("/")
+@router.get("/")
 async def get_req(status : Annotated[str, Query()], auth: Annotated[str, Header()]):
   user = lazy(auth)
-  if user["role"] = "Employee":
+  if user["role"] == "Employee":
     return get_req_by_status(status, user["id"])
   
     

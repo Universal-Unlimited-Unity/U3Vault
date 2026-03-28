@@ -140,14 +140,14 @@ if st.session_state.logged:
         if "page" not in st.session_state:
             st.session_state.page = "Home"
 
-        st.sidebar("Menu")
+        st.sidebar.title("Menu")
 
-        if st.sidebar.button("Home"):
+        if st.sidebar.button("Home", width='stretch'):
             st.session_state.page = "Home"
-        if st.sidebar.button("Leave Requests"):
+        if st.sidebar.button("Leave Requests", width='stretch'):
             st.session_state.page = "Leave Requests"
 
-        if st.session_state.page = "Home":
+        if st.session_state.page == "Home":
 
             if "info" not in st.session_state:
                 st.session_state.info = None

@@ -1,6 +1,6 @@
 from db.db_connect import db_connect, metadata
-from .model import request
-from sqlalchemy import insert, Table, Column, String, Date, select, delete, ForeignKey, UniqueConstraint, Datetime
+from .model import request as request_model
+from sqlalchemy import insert, Table, Column, String, Date, select, delete, ForeignKey, UniqueConstraint, DateTime
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from create_company.db_manage import company
@@ -12,22 +12,22 @@ request = Table(
   "request",
   metadata,
   Column("req_id", UUID(as_uuid=True), primary_key=True, nullable=False),
-  Column("emp_id", UUID(as_uuid=True), ForeignKey("employees.id"), nullable=False),
+  Column("emp_id", UUID(as_uuid=True), ForeignKey("company.id"), nullable=False),
   Column("cmp_id", UUID(as_uuid=True), ForeignKey("employees.id"), nullable=False),
   Column("reason", String, nullable=False),
   Column("doc", String, nullable=True),
   Column("status", String, nullable=False),
-  Column("date", Datetime, nullable=False),
-  Column("start_date", Datetime, nullable=False),
-  Column("end_date", Datetime, nullable=False)
+  Column("date", DateTime, nullable=False),
+  Column("start_date",DateTime, nullable=False),
+  Column("end_date", DateTime, nullable=False)
 )
 
 def init():
   metadata.create_all(eng, checkfirst=True)
 
-def add_req(request: request):
+def add_req(request: request_model):
   with eng.connect() as conn:
-    stmt = insert(request).values(request.model_dump())
+    stmt = insert(request_).values(request_.model_dump())
     conn.execute(stmt)
     conn.commit()
 
