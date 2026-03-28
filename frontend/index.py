@@ -224,7 +224,7 @@ if st.session_state.logged:
                 status = st.selectbox("Status", options=["All", "Pending", "Approved", "Rejected"])
                 with st.spinner("Loading Requests"):
                     try:
-                        res = requests.get(API_URL_REQ, params=status, headers=st.session_state.headers)
+                        res = requests.get(API_URL_REQ, params={"status": status}, headers=st.session_state.headers)
                     except Exception as e:
                         st.error(f"Backend Error: {e}")
                     if res.status_code == 200:
@@ -232,9 +232,9 @@ if st.session_state.logged:
                         col1, col2, col3 = st.columns(3)
                         for req in reqs:
                             with col1:
-                                st.write(req["date"])
+                                st.write(req["date"][:10])
                             with col2:
-                                st.write(req["req"])
+                                st.write(req["reason"])
                             with col3:
                                 if req["status"] == "Approved":
                                     st.success("Approved")
