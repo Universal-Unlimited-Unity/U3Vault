@@ -7,7 +7,7 @@ from shared.func import lazy
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 router = APIRouter(prefix="/company", tags=["company"])
-@router.post("/")
+@router.post("")
 async def create_company_api(company: Company):
     company.password = pwd_context.hash(company.password)    
     company_id = insert_company(company)
