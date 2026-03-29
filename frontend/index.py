@@ -146,6 +146,8 @@ if st.session_state.logged:
             st.session_state.page = "Home"
         if st.sidebar.button("Leave Requests", width='stretch'):
             st.session_state.page = "Leave Requests"
+        if st.sidebar.button("Attendance"):
+            st.session_state.page = "Attendance"
 
         if st.session_state.page == "Home":
 
@@ -242,6 +244,37 @@ if st.session_state.logged:
                             st.divider()
                     elif res.status_code == 401 or res.status_code == 404:
                         st.error("Something Went Wrong")
+        if st.session_state.page == "Attendance":
+            st.markdown(f":{green}[Here You Can Keep Track Of Your Attendance]")
+            st.devider()
+            st.markdown(f":{blue}[Please enter the time period you wish to check. Leave both Start and End empty to search all time, or fill only one to search from a specific date forward or backward.]")
+            start = st.date_input("Start Date")
+            end = st.date_input("End Date")
+            if st.button("Load Attendance Records"):
+                query = {"start": start,
+                         "end": end}
+                try:
+                    with st.spinner("Loading"):
+                        res = requests.get(f"{API_URL_att}/records/{st.session_state.user["id"]}", params=query, headers=st.session_state.headers)
+                        if res.status_code == 200:
+                            df = res.json()
+                            try:
+                                pie = requests.get(f"{API_URL_att}/analytics/piechart/{st.session_state.user["id"]}", 
+                                                    params=query, headers=st.session_state.headers)
+                                col1, col2 = st.columns(2, border=True)
+                                with col1:
+                                    st.dataframe(df)
+                                with col2:
+                                    st.image(pie)
+                                if st.button("Refrech", width='stretch'):
+                                    st.rerun()
+                            except Exception as e:
+                                st.error(f"Backend Error {e}")
+                            
+                        elif res.status_code == 404:
+                            st.error(f"{res.detail}")
+                except Exception as e:
+                    st.error(f"Backend Error {e}")
                     
     if st.session_state.user["role"] == "Admin":
         
