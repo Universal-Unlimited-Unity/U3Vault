@@ -98,9 +98,9 @@ async def att_plots(
 @router.get("/records/{id}")
 async def att_record_one(
     id: Annotated[UUID, Path()],
+    auth: Annotated[str, Header()],
     start: Annotated[str | None, Query()] = None,
-    end: Annotated[str | None, Query()] = None,
-    auth: Annotated[str | None, Header()]
+    end: Annotated[str | None, Query()] = None
 ):
     df = record_one(id, start, end)
 
@@ -111,9 +111,9 @@ async def att_record_one(
 
 @router.get("/analytics/piechart/{id}")
 async def att_piechar(id: Annotated[UUID, Path()],
-                      start: Annotated[str | None, Query()] = None,
-                      end: Annotated[str | None, Query()] = None,
-                      auth: Annotated[str | None, Header()]
+                    auth: Annotated[str, Header()],
+                    start: Annotated[str | None, Query()] = None,
+                    end: Annotated[str | None, Query()] = None
 ):
     user = lazy(auth)
     if not user["role"] == "Employee":

@@ -146,7 +146,7 @@ if st.session_state.logged:
             st.session_state.page = "Home"
         if st.sidebar.button("Leave Requests", width='stretch'):
             st.session_state.page = "Leave Requests"
-        if st.sidebar.button("Attendance"):
+        if st.sidebar.button("Attendance", width='stretch'):
             st.session_state.page = "Attendance"
 
         if st.session_state.page == "Home":
@@ -245,12 +245,12 @@ if st.session_state.logged:
                     elif res.status_code == 401 or res.status_code == 404:
                         st.error("Something Went Wrong")
         if st.session_state.page == "Attendance":
-            st.markdown(f":{green}[Here You Can Keep Track Of Your Attendance]")
-            st.devider()
-            st.markdown(f":{blue}[Please enter the time period you wish to check. Leave both Start and End empty to search all time, or fill only one to search from a specific date forward or backward.]")
-            start = st.date_input("Start Date")
-            end = st.date_input("End Date")
-            if st.button("Load Attendance Records"):
+            st.markdown(f":green[Here You Can Keep Track Of Your Attendance]")
+            st.divider()
+            st.markdown(f":blue[Please enter the time period you wish to check. Leave both Start and End empty to search all time, or fill only one to search from a specific date forward or backward.]")
+            start = st.date_input("Start Date", value=None)
+            end = st.date_input("End Date", value=None)
+            if st.button("Load Attendance Records", width='stretch'):
                 query = {"start": start,
                          "end": end}
                 try:
@@ -265,14 +265,14 @@ if st.session_state.logged:
                                 with col1:
                                     st.dataframe(df)
                                 with col2:
-                                    st.image(pie)
+                                    st.image(pie.content)
                                 if st.button("Refrech", width='stretch'):
                                     st.rerun()
                             except Exception as e:
                                 st.error(f"Backend Error {e}")
                             
                         elif res.status_code == 404:
-                            st.error(f"{res.detail}")
+                            st.error(f"No Result For This Period Of Time")
                 except Exception as e:
                     st.error(f"Backend Error {e}")
                     

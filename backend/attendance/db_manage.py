@@ -127,11 +127,11 @@ def plot_status_trend_global(status: str, start: str = None, end : str = None):
     vf.seek(0)
     return vf.read()
 
-def pie_plot(id: UUID_type, start=None: str, end: str):
+def pie_plot(id: UUID_type, start: str, end: str):
     df = att_one_analytics(id, start, end)
     labels = df["Status"]
     sizes = df["Percentage"]
-    fig, ax = plt.subplot()
+    fig, ax = plt.subplots()
     ax.pie(sizes, labels=labels, autopct="%1.0f%%", startangle=90)
     ax.axis("equal")
     vf = BytesIO()
