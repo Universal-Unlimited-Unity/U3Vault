@@ -1,4 +1,4 @@
-from fastapi import HTTPException, Path, Query, Body, Response, APIRouter
+from fastapi import HTTPException, Path, Query, Body, Response, APIRouter, Header
 from contextlib import asynccontextmanager
 from .db_manage import (
     emp_attendance_dict,
@@ -11,12 +11,13 @@ from .db_manage import (
     plot_status_trend_global,
     generate_all_employees_report,
     generate_single_employee_report,
+    pie_plot
 )
 from typing import Annotated
 from .model import Attendance
 import datetime
 from uuid import UUID
-
+from shared.func import lazy
 router = APIRouter(prefix="/attendance", tags=["Attendance"])
 
 @router.get("/")
@@ -107,7 +108,18 @@ async def att_record_one(
 
     return df.to_dict(orient="records")
 
-
+@router.get("/analytics/piechart/{id}")
+async def att_piechar(id: Annotated[UUID, Path()],
+                      start: Annotated[str | None, Query()] = None,
+                      end: Annotated[str | None, Query()] = None,
+                      auth: Annotated[str | None, Header()]
+):
+    user = lazy(auth)
+    if not user["role"] == "Employee":
+        raise HTTPException(status_code=401)
+    vf = pie_plot(id, start, end)
+    return Response(content=vf, media_type="image/png")
+    
 @router.get("/analytics/{id}")
 async def att_analytics_one(
     id: Annotated[str, Path()],
