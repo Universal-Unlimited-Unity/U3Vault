@@ -69,15 +69,16 @@ def record_all(start: str = None, end: str = None):
     
 def record_one(id: UUID_type, start: str = None, end: str = None):
     df = att_dataframe_one(id)
-    if start and end:
+    if start or end:
         df = timeperiod(df, start, end)
     return df
     
 def timeperiod(df: pd.DataFrame, start: str, end: str):
-    if start and end:
+    if start:
         start = pd.to_datetime(start)
-        end = pd.to_datetime(end)
         df = df[df["date"] >= start]
+    if end:
+        end = pd.to_datetime(end)
         df = df[df["date"] <= end]
     return df
 def att_global_analytics(start: str=None, end: str=None):
@@ -88,8 +89,7 @@ def att_global_analytics(start: str=None, end: str=None):
     return df
 
 def att_one_analytics(id: str, start=None, end=None):
-    df = att_dataframe_one(id)
-    df = timeperiod(df, start, end)
+    df = record_one(id, start, end)
     df = (df["status"].value_counts(normalize=True)*100).reset_index(name="Percentage")
     df = df.rename(columns={"status": "Status"})
     return df
@@ -126,7 +126,19 @@ def plot_status_trend_global(status: str, start: str = None, end : str = None):
 
     vf.seek(0)
     return vf.read()
-    
+
+def pie_plot(id: UUID_type, start=None: str, end: str):
+    df = att_one_analytics(id, start, end)
+    labels = df["Status"]
+    sizes = df["Percentage"]
+    fig, ax = plt.subplot()
+    ax.pie(sizes, labels=labels, autopct="%1.0f%%", startangle=90)
+    ax.axis("equal")
+    vf = BytesIO()
+    fig.savefig(vf, format="png")
+    vf.seek(0)
+    return vf
+
 # Two functions below are ai generated since i don't know how to work with fpdf  
 
 def generate_single_employee_report(emp_name, emp_id, df, start, end):
