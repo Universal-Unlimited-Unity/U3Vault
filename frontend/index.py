@@ -250,7 +250,7 @@ if st.session_state.logged:
             st.markdown(f":blue[Please enter the time period you wish to check. Leave both Start and End empty to search all time, or fill only one to search from a specific date forward or backward.]")
             start = st.date_input("Start Date", value=None)
             end = st.date_input("End Date", value=None)
-            if st.button("Load Attendance Records", width='stretch'):
+            if st.button("Load Attendance Records And Analytics", width='stretch'):
                 query = {"start": start,
                          "end": end}
                 try:
@@ -261,10 +261,11 @@ if st.session_state.logged:
                             try:
                                 pie = requests.get(f"{API_URL_att}/analytics/piechart/{st.session_state.user["id"]}", 
                                                     params=query, headers=st.session_state.headers)
-                                col1, col2 = st.columns(2, border=True)
-                                with col1:
+                            
+                                tab1, tab2 = st.tabs(["📋 Records", "📊 Analytics"])
+                                with tab1:
                                     st.dataframe(df)
-                                with col2:
+                                with tab2:
                                     st.image(pie.content)
                                 if st.button("Refrech", width='stretch'):
                                     st.rerun()
