@@ -100,6 +100,7 @@ async def att_record_one(
     id: Annotated[UUID, Path()],
     start: Annotated[str | None, Query()] = None,
     end: Annotated[str | None, Query()] = None,
+    auth: Annotated[str | None, Header()]
 ):
     df = record_one(id, start, end)
 
