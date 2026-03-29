@@ -136,8 +136,9 @@ def pie_plot(id: UUID_type, start=None: str, end: str):
     ax.axis("equal")
     vf = BytesIO()
     fig.savefig(vf, format="png")
+    plt.close(fig)
     vf.seek(0)
-    return vf
+    return vf.read()
 
 # Two functions below are ai generated since i don't know how to work with fpdf  
 
