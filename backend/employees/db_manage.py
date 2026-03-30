@@ -1,11 +1,11 @@
 from db.db_connect import db_connect, metadata
 from .model import Employee
-from sqlalchemy import insert, Table, Column, MetaData, String, Date, select, delete, ForeignKey, UniqueConstraint
+from sqlalchemy import insert, Table, Column, MetaData, String, Date, select, delete, ForeignKey, UniqueConstraint, update
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.engine import CursorResult
 from create_company.db_manage import company
-
+from .update_model import UpdateModelByEmp
 eng = db_connect()
 
 employees = Table(
@@ -91,13 +91,13 @@ def listall() -> CursorResult:
         res = conn.execute(stmt).fetchall()
         return res
 
-def select_emp(id: str) -> CursorResult:
+def select_emp(id: uuid.UUID) -> CursorResult:
     with eng.connect() as conn:
         stmt = select(employees).where(employees.c.id == id)
         result = conn.execute(stmt).fetchone()
         return result
         
-def delete_emp(id: str) -> CursorResult:
+def delete_emp(id: uuid.UUID) -> CursorResult:
     with eng.connect() as conn:
         stmt = delete(employees).where(employees.c.id == id)
         deleted = select_emp(id)
@@ -106,6 +106,14 @@ def delete_emp(id: str) -> CursorResult:
         return deleted
         
         
-            
-        
-        
+def update_emp_by_emp(id: uuid.UUID, update: UpdateModelByEmp):
+    with eng.connect() as conn:
+        if update.password:
+            conn.execute(update(employees).where(employees.c.id == id).values(password=update.password))
+        if update.phone:
+            conn.execute(update(employees).where(employees.c.id == id).values(phone=update.phone))  
+        if update.emergency_phone:
+            conn.execute(update(employees).where(employees.c.id == id).values(emergency_phone=update.emergency_phone))  
+        conn.commit()
+
+    
