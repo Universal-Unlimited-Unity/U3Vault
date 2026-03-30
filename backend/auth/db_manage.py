@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import os
 from employees.db_manage import employees
 from create_company.db_manage import company
-
+import uuid.UUID
 load_dotenv()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 eng = db_connect()
@@ -50,3 +50,10 @@ def reg_auth(slug: str, email: str, pwd: str):
       "exp": datetime.utcnow() + timedelta(minutes=int(TOKEN_EXP_MIN))
       }
     return jwt.encode(payload, TOKEN_KEY, algorithm=ALGO)
+
+def verify_pwd(id: UUID, pwd: str):
+  with eng.connect() as conn:
+    pwd = conn.execute(select(employees.c.password).where(employees.c.id == id))
+    return pwd_context.verify(pwd, pwd.password)
+    
+    
