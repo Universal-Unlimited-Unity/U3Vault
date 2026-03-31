@@ -6,8 +6,11 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.engine import CursorResult
 from create_company.db_manage import company
 from .update_model import UpdateModelByEmp
+from passlib.context import CryptContext
 eng = db_connect()
 
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 employees = Table(
     "employees",
     metadata,
@@ -109,7 +112,8 @@ def delete_emp(id: uuid.UUID) -> CursorResult:
 def update_emp_by_emp(id: uuid.UUID, update: UpdateModelByEmp):
     with eng.connect() as conn:
         if update.password:
-            conn.execute(update(employees).where(employees.c.id == id).values(password=update.password))
+            pwd = pwd_context.hash(update.password)
+            conn.execute(update(employees).where(employees.c.id == id).values(password=pwd))
         if update.phone:
             conn.execute(update(employees).where(employees.c.id == id).values(phone=update.phone))  
         if update.emergency_phone:
