@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException, Path, Body, Header
+from fastapi import APIRouter, HTTPException, Path, Body, Header, Query
 from typing import Annotated
 from .db_manage import admin_auth, reg_auth, verify_pwd
 from .model import admin, regular
 from uuid import UUID
+from shared.func import lazy
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/login")

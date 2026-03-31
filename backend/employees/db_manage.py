@@ -5,7 +5,7 @@ import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.engine import CursorResult
 from create_company.db_manage import company
-from .update_model import UpdateModelByEmp
+from .update_model import UpdateEmpByEmp
 from passlib.context import CryptContext
 eng = db_connect()
 
@@ -109,15 +109,15 @@ def delete_emp(id: uuid.UUID) -> CursorResult:
         return deleted
         
         
-def update_emp_by_emp(id: uuid.UUID, update: UpdateModelByEmp):
+def update_emp_by_emp(id: uuid.UUID, update_: UpdateEmpByEmp):
     with eng.connect() as conn:
-        if update.password:
-            pwd = pwd_context.hash(update.password)
+        if update_.password:
+            pwd = pwd_context.hash(update_.password)
             conn.execute(update(employees).where(employees.c.id == id).values(password=pwd))
-        if update.phone:
-            conn.execute(update(employees).where(employees.c.id == id).values(phone=update.phone))  
-        if update.emergency_phone:
-            conn.execute(update(employees).where(employees.c.id == id).values(emergency_phone=update.emergency_phone))  
+        if update_.phone:
+            conn.execute(update(employees).where(employees.c.id == id).values(phone=update_.phone))  
+        if update_.emergency_phone:
+            conn.execute(update(employees).where(employees.c.id == id).values(emergency_phone=update_.emergency_phone))  
         conn.commit()
 
     

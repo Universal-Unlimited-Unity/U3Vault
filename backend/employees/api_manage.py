@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import os
 from passlib.context import CryptContext
 from shared.func import lazy
-from .update_model import UpdateModelByEmp
+from .update_model import UpdateEmpByEmp
 from uuid import UUID
 router = APIRouter(prefix="/employees", tags=["employees"])
 
@@ -58,7 +58,7 @@ async def delete_emp_api(id: Annotated[str, Path()], auth: Annotated[str, Header
 
 
 @router.patch("")
-async def update_by_emp(auth: Annotated[str, Header()], update: Annotated[UpdateModelByEmp, Body()]):
+async def update_by_emp(auth: Annotated[str, Header()], update: Annotated[UpdateEmpByEmp, Body()]):
     user = lazy(auth)
     id = UUID(user["id"])
     update_emp_by_emp(id, update)
