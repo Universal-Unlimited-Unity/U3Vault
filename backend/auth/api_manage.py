@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Path, Body
+from fastapi import APIRouter, HTTPException, Path, Body, Header
 from typing import Annotated
 from .db_manage import admin_auth, reg_auth, verify_pwd
 from .model import admin, regular
@@ -18,8 +18,10 @@ async def auth(login: Annotated[admin | regular, Body()]):
       raise HTTPException(status_code=401, detail="Wrong Infos")
     return {"token": token}
       
-@router.post("/verify/{id}")
-async def verify_pwd_api(id: Annotated[UUID, Path()], pwd: Annotated[str, Query()]):
+@router.post("/verify")
+async def verify_pwd_api(id: Annotated[UUID, Path()], pwd: Annotated[str, Query()], auth: Annotated[str, Header()]):
+  user = lazy(auth)
+  id = UUID(user["id"])
   if not verify_pwd(id, pwd):
     raise HTTPException(status_code = 401)
   
