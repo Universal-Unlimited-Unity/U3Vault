@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Path, Header, Body
-from .db_manage import add, listall_selectbox, delete_emp, listall, select_emp
+from .db_manage import add, listall_selectbox, delete_emp, listall, select_emp, update_emp_by_emp
 from .model import Employee
 from typing import Annotated
 from jose import jwt
@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 import os
 from passlib.context import CryptContext
 from shared.func import lazy
+from .update_model import UpdateModelByEmp
+from uuid import UUID
 router = APIRouter(prefix="/employees", tags=["employees"])
 
 load_dotenv()
@@ -53,3 +55,10 @@ async def delete_emp_api(id: Annotated[str, Path()], auth: Annotated[str, Header
     if not user["role"] == "Admin":
         raise HTTPException(status_code=401)
     return delete_emp(id)
+
+
+@router.patch("")
+async def update_by_emp(auth: Annotated[str, Header()], update: Annotated[UpdateModelByEmp, Body()]):
+    user = lazy(auth)
+    id = UUID(user["id"])
+    update_emp_by_emp(id, update)
