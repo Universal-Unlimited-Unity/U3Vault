@@ -19,7 +19,7 @@ async def auth(login: Annotated[admin | regular, Body()]):
     return {"token": token}
       
 @router.post("/verify")
-async def verify_pwd_api(id: Annotated[UUID, Path()], pwd: Annotated[str, Query()], auth: Annotated[str, Header()]):
+async def verify_pwd_api(pwd: Annotated[str, Query()], auth: Annotated[str, Header()]):
   user = lazy(auth)
   id = UUID(user["id"])
   if not verify_pwd(id, pwd):
