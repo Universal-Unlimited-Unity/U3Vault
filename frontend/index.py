@@ -148,6 +148,11 @@ if st.session_state.logged:
             st.session_state.page = "Leave Requests"
         if st.sidebar.button("Attendance", width='stretch'):
             st.session_state.page = "Attendance"
+        if st.sidebar.button("Settings", width='stretch'):
+            st.session_state.page = "Settings"
+        if st.sidebar.button("🚪 Logout"):
+            st.session_state.clear()
+            st.rerun()
 
         if st.session_state.page == "Home":
 
@@ -277,6 +282,64 @@ if st.session_state.logged:
                 except Exception as e:
                     st.error(f"Backend Error {e}")
                     
+        if st.session_state.page = "Settings":
+            if "verify" not in st.session_state:
+                st.session_state.verify = None
+            if not verify:
+                pwd = st.text_input("Password", placeholder="Please Enter Your Password To Verify Your Identity")
+                if st.button("Verify", width='stretch'):
+                    try:
+                        query = {"pwd": pwd}
+                        res = requests.post(f"{API_URL_AUTH}/verify", headers=st.session_state.headers, params= query)
+                        if res.status_code == 200:
+                            st.session_state.verify = True
+                        elif res.status_code == 401:
+                            st.error("Wrong Password")
+                        
+                    except Exception as e:
+                        st.error(f"Backend Error: {e}")
+            else:
+                tab1, tab2, tab3 = st.tabs(["Change Password", "Change Phone Number", "Add/Change Emergency Phone"])
+                with tab1:
+                    pwd1 = st.text_input("Password")
+                    pwd2 = st.tet_input("Confrim Password")
+                    if pwd1 != pwd2:
+                        st.error("Passwords Don't Match")
+                    else:
+                        payload = {"password": pwd1}
+                        try:
+                            res = requests.patch(API_URL, st.session_state.headers, json=payload)
+                            if res.status_code == 200:
+                                st.success("Password Updated!")
+                        except Exception as e:
+                            st.error(f"Backend Error: {e}")
+                with tab2:
+                    p1 = st.text_input("Phone Number")
+                    p2 = st.tet_input("Phone Number")
+                    if p1 != p2:
+                        st.error("Numbers Don't Match")
+                    else:
+                        payload = {"phone": p1}
+                        try:
+                            res = requests.patch(API_URL, st.session_state.headers, json=payload)
+                            if res.status_code == 200:
+                                st.success("Phone Updated!")
+                        except Exception as e:
+                            st.error(f"Backend Error: {e}")
+                with tab3:
+                    ep1 = st.text_input("Emergency Phone")
+                    ep2 = st.tet_input("Emergency Phone")
+                    if ep1 != ep2:
+                        st.error("Numbers Don't Match")
+                    else:
+                        payload = {"emergency_phone": ep1}
+                        try:
+                            res = requests.patch(API_URL, st.session_state.headers, json=payload)
+                            if res.status_code == 200:
+                                st.success("Emergency Phone Updated!")
+                        except Exception as e:
+                            st.error(f"Backend Error: {e}) 
+                            
     if st.session_state.user["role"] == "Admin":
         
         st.sidebar.title("Navigation")
