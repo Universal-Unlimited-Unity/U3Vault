@@ -150,6 +150,8 @@ if st.session_state.logged:
             st.session_state.page = "Attendance"
         if st.sidebar.button("Settings", width='stretch'):
             st.session_state.page = "Settings"
+        if st.sidebar.button("Contract", width='stretch'):
+            st.session_state.page = "Contract"
         if st.sidebar.button("🚪 Logout", width='stretch'):
             st.session_state.clear()
             st.rerun()
@@ -355,7 +357,24 @@ if st.session_state.logged:
                     if st.button("Close Settings", key='close 3', width='stretch'):
                         st.session_state.verify = None
                         st.rerun()
-                            
+                        
+        if st.session_state.page = "Contract":
+            if st.button("View Contract", width='stretch'):
+                st.divider()
+                try:
+                    res = requests.get(f"{API_URL}/{st.session_state.user["id"]}", headers = st.session_state.headers)
+                    if res.status_code == 200:
+                        file_path = os.path.join(root, res.json())
+                        with open(file_path, "wb") as f:
+                            base64_pdf = base64.b64encode(f.read()).decode("utf-8)
+                            pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>'
+                        st.markdown(pdf_display, unsafe_allow_html=True)
+
+                    elif res.status_code == 404:
+                        st.error("Your Contract Was Not Uploaded")
+                except Exception as e:
+                    st.error(f"Backend Error {e}")
+                
     if st.session_state.user["role"] == "Admin":
         
         st.sidebar.title("Navigation")
