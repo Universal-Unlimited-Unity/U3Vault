@@ -120,4 +120,8 @@ def update_emp_by_emp(id: uuid.UUID, update_: UpdateEmpByEmp):
             conn.execute(update(employees).where(employees.c.id == id).values(emergency_phone=update_.emergency_phone))  
         conn.commit()
 
-    
+def get_contract(id: uuid.UUID) -> str:
+    with eng.connect() as conn:
+        contract = conn.execute(select(employees.c.contract_pdf).where(employees.c.id == id)).first()
+        contract = contract.contract_pdf
+        return contract
