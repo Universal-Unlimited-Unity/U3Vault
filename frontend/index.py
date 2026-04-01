@@ -31,7 +31,12 @@ def save_upload(upload: UploadedFile, dir: str) -> str | None:
     with open(path, "wb") as f:
         f.write(upload.getbuffer())
     return f"{dir}/{filename}"  
-    
+
+def check_pwd(pwd):
+    if len(pwd) >= 10 and any(c.islower() for c in pwd) and any(c.isupper() for c in pwd) and any(c.isdigit() for c in pwd):
+        return True
+    else:
+        return False
 st.set_page_config(page_icon="logoo.png", page_title="U3Vault")
 
 # sign-in/sign-up
@@ -101,30 +106,33 @@ if not st.session_state.logged:
             if st.form_submit_button("Create Company", width='stretch'):
                 if all([name, phone, password1, email, address, password2]):
                     if password1 == password2:
-                        try:
-                            slug = requests.get(f"{API_URL_COMP}/{name}")
-                            if slug.status_code == 200:
-                                
-                                payload = {"name": name,
-                                        "phone_number": phone,
-                                        "email": email,
-                                        "password": password1,
-                                        "address": address,
-                                        "slug": slug.json()}
-                            else:
-                                st.error("Backend Error")
-                        except Exception as e:
-                            st.error(f"Backend Error: {e}")
-                        try:
-                            res = requests.post(API_URL_COMP, json=payload)
-                            if res.status_code == 200:
-                                st.success("Company Created! You Can Now Use Your Email And Password To Login")
-                                st.session_state.choice = "Login"
-                                st.session_state.role = "Admin"
-                            elif res.status_code == 500:
-                                st.error("Couldn't Add Company")
-                        except Exception as e:
-                            st.error(f"Backend Error {e}")
+                        if not check_pwd(password1):
+                            st.error("Verification Failed: Your password must be at least 10 characters long and include a mix of uppercase letters, lowercase letters, and numbers.")                        
+                        else:
+                            try:
+                                slug = requests.get(f"{API_URL_COMP}/{name}")
+                                if slug.status_code == 200:
+                                    
+                                    payload = {"name": name,
+                                            "phone_number": phone,
+                                            "email": email,
+                                            "password": password1,
+                                            "address": address,
+                                            "slug": slug.json()}
+                                else:
+                                    st.error("Backend Error")
+                            except Exception as e:
+                                st.error(f"Backend Error: {e}")
+                            try:
+                                res = requests.post(API_URL_COMP, json=payload)
+                                if res.status_code == 200:
+                                    st.success("Company Created! You Can Now Use Your Email And Password To Login")
+                                    st.session_state.choice = "Login"
+                                    st.session_state.role = "Admin"
+                                elif res.status_code == 500:
+                                    st.error("Couldn't Add Company")
+                            except Exception as e:
+                                st.error(f"Backend Error {e}")
                     else:
                         st.warning("Passwords Don't Match")
                         
@@ -140,8 +148,9 @@ if st.session_state.logged:
         if "page" not in st.session_state:
             st.session_state.page = "Home"
 
-        st.sidebar.title("Menu")
-
+        st.sidebar.image("front.png")
+        st.sidebar.title("")
+        
         if st.sidebar.button("Home", width='stretch'):
             st.session_state.page = "Home"
         if st.sidebar.button("Leave Requests", width='stretch'):
@@ -204,30 +213,35 @@ if st.session_state.logged:
                     st.info(f"Company: {st.session_state.cmp_name}")
                     
         if st.session_state.page == "Leave Requests":
+
+            st.image("front.png", width=160)
             create_req, check_req = st.tabs(["Create Request", "Check Request"])
             with create_req:
-                with st.form("Leave Request"):#, clear_on_submit=True):
-                    reason = st.text_input("Reason", placeholder="e.g. sick")
-                    start_date = st.date_input("Start Date")
-                    end_date = st.date_input("End Date")
-                    doc = st.file_uploader("Upload Justification", type=["pdf"])
+                with st.form("Leave Request"):
+                    reason = st.text_input("Reason*", placeholder="e.g. sick")
+                    start_date = st.date_input("Start Date*")
+                    end_date = st.date_input("End Date", value=None)
+                    doc = st.file_uploader("Upload Justification*", type=["pdf"], accept_multiple_files=False)
                     submit = st.form_submit_button("Submit Request")
                 if submit:
-                    payload = {"reason": reason,
-                                "start_date": str(start_date),
-                                "end_date": str(end_date),
-                                "status": "Pending",
-                                "cmp_id": st.session_state.user["company_id"],
-                                "emp_id": st.session_state.user["id"],
-                                "doc": save_upload(doc, "requests")}
-                    try:
-                        res = requests.post(API_URL_REQ, json=payload, headers=st.session_state.headers)
-                    except Exception as e:
-                        st.error(f"Backend Error: {e}")
-                    if res.status_code == 200:
-                        st.success("Request Submited Successfully, Check It's Status In The Other Tab")
-                    elif res.status_code in ["401", "404"]:
-                        st.error("Something Went Wrong")
+                    if not reason or not start_date or not doc:
+                        st.error("Please fill out all fields marked with an asterisk (*)")
+                    else:
+                        payload = {"reason": reason,
+                                    "start_date": str(start_date),
+                                    "end_date": str(end_date),
+                                    "status": "Pending",
+                                    "cmp_id": st.session_state.user["company_id"],
+                                    "emp_id": st.session_state.user["id"],
+                                    "doc": save_upload(doc, "requests")}
+                        try:
+                            res = requests.post(API_URL_REQ, json=payload, headers=st.session_state.headers)
+                        except Exception as e:
+                            st.error(f"Backend Error: {e}")
+                        if res.status_code == 200:
+                            st.success("Request Submited Successfully, Check It's Status In The Other Tab")
+                        elif res.status_code in ["401", "404"]:
+                            st.error("Something Went Wrong")
             with check_req: 
                 status = st.selectbox("Status", options=["All", "Pending", "Approved", "Rejected"])
                 with st.spinner("Loading Requests"):
@@ -252,6 +266,7 @@ if st.session_state.logged:
                     elif res.status_code == 401 or res.status_code == 404:
                         st.error("Something Went Wrong")
         if st.session_state.page == "Attendance":
+            st.image("front.png", width=160)
             st.markdown(f":green[Here You Can Keep Track Of Your Attendance]")
             st.divider()
             st.markdown(f":blue[Please enter the time period you wish to check. Leave both Start and End empty to search all time, or fill only one to search from a specific date forward or backward.]")
@@ -285,6 +300,7 @@ if st.session_state.logged:
                     st.error(f"Backend Error {e}")
                     
         if st.session_state.page == "Settings":
+            st.image("front.png", width=160)
             if "verify" not in st.session_state:
                 st.session_state.verify = None
             if not st.session_state.verify:
@@ -304,35 +320,53 @@ if st.session_state.logged:
             else:
                 tab1, tab2, tab3 = st.tabs(["Change Password", "Change Phone Number", "Add/Change Emergency Phone"])
                 with tab1:
-                    pwd1 = st.text_input("Password", key='pwd1', type='password')
-                    pwd2 = st.text_input("Confrim Password", key='pwd2', type='password')
-                    if st.button("Submit", width='stretch', key='1'):
-                        if pwd1 != pwd2:
+                    with st.form("password"):
+                        pwd1 = st.text_input("Password*", key='pwd1', type='password')
+                        pwd2 = st.text_input("Confrim Password*", key='pwd2', type='password')
+                        submit = st.form_submit_button("Submit", width='stretch', key='1')
+
+                    if submit:
+                        if not pwd1 or not pwd2:
+                            st.error("Please fill out all fields marked with an asterisk (*)")
+                        elif pwd1 != pwd2:
                             st.error("Passwords Don't Match")
+                    
                         else:
-                            payload = {"password": pwd1}
-                            try:
-                                res = requests.patch(API_URL, headers=st.session_state.headers, json=payload)
-                                if res.status_code == 200:
-                                    st.success("Password Updated!")
-                            except Exception as e:
-                                st.error(f"Backend Error: {e}")
+                            if not check_pwd(pwd1):
+                                st.error("Verification Failed: Your password must be at least 10 characters long and include a mix of uppercase letters, lowercase letters, and numbers.")                                  
+                                
+                            else:
+                                payload = {"password": pwd1}
+                                try:
+                                    res = requests.patch(API_URL, headers=st.session_state.headers, json=payload)
+                                    if res.status_code == 200:
+                                        st.success("Password Updated!")
+                                except Exception as e:
+                                    st.error(f"Backend Error: {e}")
                     st.divider()
                     if st.button("Close Settings", key='close 1', width='stretch'):
                         st.session_state.verify = None
                         st.rerun()
                 with tab2:
-                    p1 = st.text_input("Phone Number", key='p1')
-                    p2 = st.text_input("Phone Number", key='p2')
-                    if st.button("Submit", width='stretch', key='2'):
-                        if p1 != p2:
+                    with st.form("phone"):
+                        p1 = st.text_input("Phone Number*", key='p1')
+                        p2 = st.text_input("Phone Number*", key='p2')
+                        submit = st.form_submit_button("Submit", width='stretch', key='2')
+                    if submit:
+                        if not p1 or not p2:
+                            st.error("Please fill out all fields marked with an asterisk (*)")
+
+                        elif p1 != p2:
                             st.error("Numbers Don't Match")
+                        
                         else:
                             payload = {"phone": p1}
                             try:
                                 res = requests.patch(API_URL, headers=st.session_state.headers, json=payload)
                                 if res.status_code == 200:
                                     st.success("Phone Updated!")
+                                elif res.status_code == 422:
+                                    st.error("Please Enter a Valid Phone NUmber, e. g +2126XXXXXXXX")
                             except Exception as e:
                                 st.error(f"Backend Error: {e}")
                     st.divider()
@@ -340,10 +374,15 @@ if st.session_state.logged:
                         st.session_state.verify = None
                         st.rerun()
                 with tab3:
-                    ep1 = st.text_input("Emergency Phone", key='ep1')
-                    ep2 = st.text_input("Emergency Phone", key='ep2')
-                    if st.button("Submit", width='stretch', key='3'):
-                        if ep1 != ep2:
+                    with st.form("emer phone"):
+                        ep1 = st.text_input("Emergency Phone", key='ep1')
+                        ep2 = st.text_input("Emergency Phone", key='ep2')
+                        submit = st.form_submit_button("Submit", key='3', width='stretch')
+                    if submit:
+                        if not ep1 or not ep2:
+                            st.error("Please fill out all fields marked with an asterisk (*)")
+
+                        elif ep1 != ep2:
                             st.error("Numbers Don't Match")
                         else:
                             payload = {"emergency_phone": ep1}
@@ -351,6 +390,8 @@ if st.session_state.logged:
                                 res = requests.patch(API_URL, headers=st.session_state.headers, json=payload)
                                 if res.status_code == 200:
                                     st.success("Emergency Phone Updated!")
+                                elif res.status_code == 422:
+                                    st.error("Please Enter a Valid Phone NUmber, e. g +2126XXXXXXXX")
                             except Exception as e:
                                 st.error(f"Backend Error: {e}") 
                     st.divider()
@@ -358,16 +399,18 @@ if st.session_state.logged:
                         st.session_state.verify = None
                         st.rerun()
                         
-        if st.session_state.page = "Contract":
+        if st.session_state.page == "Contract":
+            st.image("front.png", width=160)
             if st.button("View Contract", width='stretch'):
                 st.divider()
                 try:
-                    res = requests.get(f"{API_URL}/{st.session_state.user["id"]}", headers = st.session_state.headers)
+                    res = requests.get(f"{API_URL}/contracts/{st.session_state.user["id"]}", headers = st.session_state.headers)
                     if res.status_code == 200:
-                        file_path = os.path.join(root, res.json())
-                        with open(file_path, "wb") as f:
-                            base64_pdf = base64.b64encode(f.read()).decode("utf-8)
-                            pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>'
+                        res = res.json()
+                        file_path = os.path.join(root, res)
+                        with open(file_path, "rb") as f:
+                            base64_pdf = base64.b64encode(f.read()).decode("utf-8")
+                        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>'
                         st.markdown(pdf_display, unsafe_allow_html=True)
 
                     elif res.status_code == 404:

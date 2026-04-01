@@ -9,6 +9,7 @@ from passlib.context import CryptContext
 from shared.func import lazy
 from .update_model import UpdateEmpByEmp
 from uuid import UUID
+from shared.func import check_pwd
 router = APIRouter(prefix="/employees", tags=["employees"])
 
 load_dotenv()
@@ -36,6 +37,9 @@ async def listall_selectbox_api(auth: Annotated[str, Header()]):
 @router.patch("")
 async def update_by_emp(auth: Annotated[str, Header()], update: Annotated[UpdateEmpByEmp, Body()]):
     user = lazy(auth)
+    if update.password:
+        if not check_pwd(update.password):
+            raise HTTPException(status_code=404)
     id = UUID(user["id"])
     update_emp_by_emp(id, update)
     

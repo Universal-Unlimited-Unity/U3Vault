@@ -106,7 +106,7 @@ async def att_record_one(
 
     if df.empty:
         raise HTTPException(status_code=404, detail="No Result For this period of time")
-
+    df = df.fillna("NAN")
     return df.to_dict(orient="records")
 
 @router.get("/analytics/piechart/{id}")

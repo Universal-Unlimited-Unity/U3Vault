@@ -7,6 +7,7 @@ from sqlalchemy.engine import CursorResult
 from create_company.db_manage import company
 from .update_model import UpdateEmpByEmp
 from passlib.context import CryptContext
+from shared.func import check_pwd
 eng = db_connect()
 
 
@@ -122,6 +123,5 @@ def update_emp_by_emp(id: uuid.UUID, update_: UpdateEmpByEmp):
 
 def get_contract(id: uuid.UUID) -> str:
     with eng.connect() as conn:
-        contract = conn.execute(select(employees.c.contract_pdf).where(employees.c.id == id)).first()
-        contract = contract.contract_pdf
-        return contract
+        contract = conn.execute(select(employees.c.contract_pdf).where(employees.c.id == id)).fetchone()
+        return contract.contract_pdf
