@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Path, Header, Body
-from .db_manage import add, listall_selectbox, delete_emp, listall, select_emp, update_emp_by_emp
+from .db_manage import add, listall_selectbox, delete_emp, listall, select_emp, update_emp_by_emp, get_contract
 from .model import Employee
 from typing import Annotated
 from jose import jwt
@@ -33,6 +33,12 @@ async def listall_selectbox_api(auth: Annotated[str, Header()]):
         raise HTTPException(status_code=404)
     return result
 
+@router.patch("")
+async def update_by_emp(auth: Annotated[str, Header()], update: Annotated[UpdateEmpByEmp, Body()]):
+    user = lazy(auth)
+    id = UUID(user["id"])
+    update_emp_by_emp(id, update)
+    
 @router.get("/dataframe", response_model=list[Employee])
 async def listall_api(auth: Annotated[str, Header()]):
     user = lazy(auth)
@@ -56,9 +62,11 @@ async def delete_emp_api(id: Annotated[str, Path()], auth: Annotated[str, Header
         raise HTTPException(status_code=401)
     return delete_emp(id)
 
+@router.get("/contracts/{id}")
+async def get_contract_api(id: Annotated[UUID, Path()], auth: Annotated[str, Header()]):
+    lazy(auth)
+    contract = get_contract(id)
+    if contract:
+        return contract
+    raise HTTPException(status_code = 404)
 
-@router.patch("")
-async def update_by_emp(auth: Annotated[str, Header()], update: Annotated[UpdateEmpByEmp, Body()]):
-    user = lazy(auth)
-    id = UUID(user["id"])
-    update_emp_by_emp(id, update)
