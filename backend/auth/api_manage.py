@@ -26,3 +26,9 @@ async def verify_pwd_api(pwd: Annotated[str, Query()], auth: Annotated[str, Head
   if not verify_pwd(id, pwd):
     raise HTTPException(status_code = 401)
   
+@router.post("/verify/token")
+async def check_token(auth: Annotated[str, header()]):
+  try:
+    lazy(auth)
+  except jwt.ExpiredSignatureError:
+    raise HTTPException(status_code = 401)
