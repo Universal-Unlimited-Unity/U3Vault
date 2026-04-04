@@ -141,7 +141,7 @@ def pie_plot(id: UUID_type, start: str, end: str):
     return vf.read()
 
 def pie_plot2(start: str, end: str):
-    df = att_global_analytics(id, start, end)
+    df = att_global_analytics(start, end)
     labels = df["Status"]
     sizes = df["Percentage"]
     fig, ax = plt.subplots()

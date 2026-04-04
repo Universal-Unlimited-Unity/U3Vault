@@ -32,15 +32,17 @@ class role(str, Enum):
     employee = "Employee"
 
 class Employee_s(BaseModel):
+    id: UUID
     first_name: str
     last_name: str
     role: role
     phone: PhoneNumber
     email: EmailStr
     department: str
-    contract_pdf
+    contract_pdf: str | None
     status: status
     department: str
+    photo: str | None
 
 class Employee(BaseModel):
     id: UUID = Field(default_factory=uuid4)

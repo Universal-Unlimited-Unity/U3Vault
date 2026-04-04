@@ -92,7 +92,7 @@ async def att_plots(
     end: Annotated[str | None, Query()] = None,
     
 ):
-    user = lazy()
+    user = lazy(auth)
     if not user["role"] == "Employee":
         vf = plot_status_trend_global(status, start, end)
         return Response(content=vf, media_type="image/png")
@@ -132,7 +132,7 @@ async def att_piechar(id: Annotated[UUID, Path()],
                     end: Annotated[str | None, Query()] = None
 ):
     user = lazy(auth)
-    if not user["role"] == "Employee":
+    if not user["role"] == "Employee" and not user["role"] == "Manager":
         raise HTTPException(status_code=401)
     vf = pie_plot(id, start, end)
     return Response(content=vf, media_type="image/png")

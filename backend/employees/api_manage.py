@@ -18,7 +18,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 @router.post("")
 async def add_api(emp: Annotated[Employee, Body()], auth: Annotated[str, Header()]) -> Employee:
     user = lazy(auth)
-    if user["role"] == "Admin" or user["role"] == "Manager:
+    if user["role"] == "Admin" or user["role"] == "Manager":
         emp.password = pwd_context.hash(emp.password)
         add(emp)
     else:

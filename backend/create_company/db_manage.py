@@ -1,4 +1,4 @@
-from sqlalchemy import Table, Column, String, MetaData, insert, DateTime, select
+from sqlalchemy import Table, Column, String, MetaData, insert, DateTime, select, update
 from sqlalchemy.dialects.postgresql import UUID
 from .model import Company
 from db.db_connect import db_connect, metadata
@@ -61,11 +61,11 @@ def cmp_name(id: str):
 def get_slug(cmp_id: uuid.UUID):
     with eng.connect() as conn:
         stmt = select(company.c.slug).where(company.c.id == cmp_id)
-        sulg = conn.execute(stmt).fetchone()
-        return slug
+        slug = conn.execute(stmt).fetchone()
+        return slug.slug
 
 def update_pwd(cmp_id: uuid.UUID, pwd: str):
     with eng.connect() as conn:
-        stmt = update(company.c.password).where(company.c.id == cmp_id).values(password = pwd)
+        stmt = update(company).where(company.c.id == cmp_id).values(password = pwd)
         conn.execute(stmt)
         conn.commit()

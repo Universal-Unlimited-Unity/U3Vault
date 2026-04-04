@@ -35,9 +35,10 @@ async def get_cmp_slug(auth: Annotated[str, Header()]) -> str:
 
 @router.patch("")
 async def update_pwd_api(password: Annotated[str, Query()], auth: Annotated[str, Header()]):
-    user = lazy()
+    user = lazy(auth)
     if not check_pwd(password):
         raise HTTPException(status_code == 404)
+    password = pwd_context.hash(password)
     update_pwd(uuid.UUID(user["company_id"]), password)
 
 

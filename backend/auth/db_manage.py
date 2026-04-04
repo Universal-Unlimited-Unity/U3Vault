@@ -58,5 +58,5 @@ def verify_pwd(id: UUID, pwd: str):
     
 def verify_pwd_admin(cmp_id: UUID, pwd: str):
   with eng.connect() as conn:
-    secret = conn.execute(select(company.c.password).where(company.c.id == id)).first()
+    secret = conn.execute(select(company.c.password).where(company.c.id == cmp_id)).first()
     return pwd_context.verify(pwd, secret.password)

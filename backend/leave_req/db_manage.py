@@ -45,8 +45,7 @@ def get_req_for_manager_by_status(cmp_id: uuid.UUID):
   with eng.connect() as conn:
     stmt = select(request.c.id, request.c.reason, request.c.doc, 
                   request.c.date, request.c.start_date, request.c.end_date, 
-                  request.c.emp_id, employees.c.first_name, employees.c.last_name)
-                  .join(employees).where(request.c.status == "Pending", request.c.cmp_id == cmp_id)
+                  request.c.emp_id, employees.c.first_name, employees.c.last_name).join(employees).where(request.c.status == "Pending", request.c.cmp_id == cmp_id)
     rows = conn.execute(stmt).mappings().fetchall()
     return rows
 
