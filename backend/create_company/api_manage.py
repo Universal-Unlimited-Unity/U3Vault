@@ -26,9 +26,9 @@ async def gen_slug(name: Annotated[str, Path()]):
 @router.get("")
 async def get_cmp_name(auth: Annotated[str, Header()]):
     user = lazy(auth)
-    return cmp_name(user["company_id"])
+    return cmp_name(uuid.UUID(user["company_id"]))
     
 @router.get("/slug")
 async def get_cmp_slug(auth: Annotated[str, Header()]) -> str:
     user = lazy()
-    return get_slug(user["company_id"])
+    return get_slug(uuid.UUID(user["company_id"]))
