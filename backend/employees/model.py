@@ -39,6 +39,26 @@ class Employee_s(BaseModel):
     email: EmailStr
     department: str
 
+class Employee_for_listall(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
+    job_name: str | None
+    first_name: str
+    last_name: str
+    middle_name: str | None
+    role: role
+    supervisor: str | None
+    gender: gender
+    dob: date
+    phone: PhoneNumber
+    email: EmailStr
+    address: str
+    department: str
+    start_date: date
+    emergency_phone: PhoneNumber | None
+    employment_type: employment_type
+    contract_type: contract_type 
+    status: status
+
 class Employee(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     job_name: str | None
