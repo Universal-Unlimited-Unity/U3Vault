@@ -140,86 +140,16 @@ def pie_plot(id: UUID_type, start: str, end: str):
     vf.seek(0)
     return vf.read()
 
-# Two functions below are ai generated since i don't know how to work with fpdf  
+def pie_plot2(start: str, end: str):
+    df = att_global_analytics(id, start, end)
+    labels = df["Status"]
+    sizes = df["Percentage"]
+    fig, ax = plt.subplots()
+    ax.pie(sizes, labels=labels, autopct="%1.0f%%", startangle=90)
+    ax.axis("equal")
+    vf = BytesIO()
+    fig.savefig(vf, format="png")
+    plt.close(fig)
+    vf.seek(0)
+    return vf.read()
 
-def generate_single_employee_report(emp_name, emp_id, df, start, end):
-
-    pdf = FPDF()
-    pdf.add_page()
-
-    pdf.set_font("Arial", "B", 18)
-    pdf.cell(0, 10, f"Attendance Report For Employee: {emp_name}", ln=True, align="C")
-    pdf.ln(5)
-
-    pdf.set_font("Arial", "", 12)
-    pdf.cell(0, 10, f"Employee ID: {emp_id}", ln=True)
-    pdf.cell(0, 10, f"Period: {start} to {end}", ln=True)
-    pdf.ln(5)
-
-    pdf.set_font("Arial", "B", 11)
-    for col in df.columns:
-        pdf.cell(40, 8, str(col), border=1)
-    pdf.ln()
-
-    pdf.set_font("Arial", "", 11)
-    for _, row in df.iterrows():
-        for val in row:
-            pdf.cell(40, 8, str(val), border=1)
-        pdf.ln()
-
-    return bytes(pdf.output())
-
-
-def generate_all_employees_report(df, plot, start, end):
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
-    try:
-        tmp.write(plot)
-        tmp.flush()
-        tmp.close()
-
-        pdf = FPDF(orientation="P", unit="mm", format="A4")
-        pdf.add_page()
-
-        pdf.set_auto_page_break(auto=True, margin=12)
-
-        pdf.set_font("Helvetica", "B", 18)
-        pdf.cell(0, 10, "Report For All Employees Attendance", ln=True, align="C")
-        pdf.ln(5)
-
-        pdf.set_font("Helvetica", "", 12)
-        pdf.cell(0, 8, f"Period: {start} to {end}", ln=True)
-        pdf.ln(4)
-
-        cols = list(df.columns)
-        ncols = max(1, len(cols))
-        usable_w = 190
-        col_w = max(18, min(50, usable_w / ncols))
-        row_h = 7
-
-        pdf.set_font("Helvetica", "B", 10)
-        for col in cols:
-            txt = str(col).replace("\n", " ")
-            pdf.cell(col_w, row_h, txt[:30], border=1)
-        pdf.ln(row_h)
-
-        pdf.set_font("Helvetica", "", 10)
-        for _, row in df.iterrows():
-            for val in row:
-                txt = "" if val is None else str(val)
-                txt = txt.replace("\n", " ")
-                pdf.cell(col_w, row_h, txt[:30], border=1)
-            pdf.ln(row_h)
-
-        pdf.ln(4)
-        try:
-            pdf.image(tmp.name, x=10, w=190)
-        except Exception:
-            pass
-
-        out = pdf.output(dest="S")
-        return bytes(out) if isinstance(out, (bytes, bytearray)) else out.encode("latin-1")
-    finally:
-        try:
-            os.remove(tmp.name)
-        except OSError:
-            pass
