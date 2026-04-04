@@ -1,6 +1,6 @@
 from db.db_connect import db_connect, metadata
 from .model import request as request_model
-from sqlalchemy import insert, Table, Column, String, Date, select, delete, ForeignKey, UniqueConstraint, DateTime
+from sqlalchemy import insert, Table, Column, String, Date, select, delete, ForeignKey, UniqueConstraint, DateTime, update
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from create_company.db_manage import company
@@ -49,3 +49,9 @@ def get_req_for_manager_by_status(cmp_id: uuid.UUID):
                   .join(employees).where(request.c.status == "Pending", request.c.cmp_id == cmp_id)
     rows = conn.execute(stmt).mappings().fetchall()
     return rows
+
+def update_req(id: uuid.UUID, status_: str):
+  with eng.connect() as conn:
+    stmt = update(request).where(request.c.id == id).values(status = status_)
+    conn.execute(stmt)
+    conn.commit()
