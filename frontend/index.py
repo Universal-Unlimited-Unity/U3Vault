@@ -6,7 +6,7 @@ import os
 import base64
 from uuid import uuid4
 from datetime import date
-from model import Employee
+from model import Employee, Employee_s
 import time
 from jose import jwt
 load_dotenv()
@@ -174,7 +174,7 @@ if st.session_state.logged:
                 info = requests.get(f"{API_URL}/{st.session_state.user['id']}", headers=st.session_state.headers)
                 if info.status_code == 200:
                     if not st.session_state.info:
-                        st.session_state.info = Employee(**info.json())
+                        st.session_state.info = Employee_s(**info.json())
             except Exception as e:
                 st.error(f"Backend Error {e}")
     
@@ -417,7 +417,285 @@ if st.session_state.logged:
                         st.error("Your Contract Was Not Uploaded")
                 except Exception as e:
                     st.error(f"Backend Error {e}")
+    if st.session_state["role"] = "Manager":
+        if "page" not in st.session_state:
+            st.session_state.page = "Home"
+
+        st.sidebar.image("front.png")
+        st.sidebar.title("")
+        
+        if st.sidebar.button("Home", width='stretch'):
+            st.session_state.page = "Home"
+        if st.sidebar.button("Employees", width='stretch'):
+            st.session_state.page = "Employees"
+        if st.sidebar.button("Leave Requests", width='stretch'):
+            st.session_state.page = "Leave Requests"
+        if st.sidebar.button("Attendance", width='stretch'):
+            st.session_state.page = "Attendance"
+        if st.sidebar.button("Settings", width='stretch'):
+            st.session_state.page = "Settings"
+        if st.sidebar.button("Contract", width='stretch'):
+            st.session_state.page = "Contract"
+        if st.sidebar.button("🚪 Logout", width='stretch'):
+            st.session_state.clear()
+            st.rerun()
+
+        if st.session_state.page == "Home":
+
+            if "info" not in st.session_state:
+                st.session_state.info = None
+    
+            try:
+                info = requests.get(f"{API_URL}/{st.session_state.user['id']}", headers=st.session_state.headers)
+                if info.status_code == 200:
+                    if not st.session_state.info:
+                        st.session_state.info = Employee_s(**info.json())
+            except Exception as e:
+                st.error(f"Backend Error {e}")
+    
+            if st.session_state.info:
+    
+                st.image("front.png", width=160)
+    
+                col1, col2 = st.columns([1, 3])
+    
+                with col1:
+                    img = os.path.join(root, st.session_state.info.photo) if st.session_state.info.photo else "default.png"
+                    st.image(img, width=120)
+    
+                with col2:
+                    st.markdown(f"""
+                    ## Welcome {st.session_state.info.first_name} {st.session_state.info.last_name}
+                    **Role:** {st.session_state.info.role.value}
+                    """)
+    
+                st.markdown("---")
+    
+                col1, col2 = st.columns(2)
+    
                 
+                cmp_name = requests.get(API_URL_COMP, headers=st.session_state.headers)
+                if cmp_name.status_code == 200:
+                    st.session_state.cmp_name = cmp_name.json()
+                elif cmp_name.status_code == 404:
+                    st.error("Something Went Wrong")
+                with col1:
+                    st.info(f"📧 Email: {st.session_state.info.email}")
+                    st.info(f"📱 Phone: {st.session_state.info.phone}")
+    
+                with col2:
+                    st.info(f"🏢 Department: {st.session_state.info.department}")
+                    st.info(f"Company: {st.session_state.cmp_name}")
+                    
+        if st.session_state.page == "Employees":
+            st.image("front.png", width=160)
+
+            add, update, listall, showprofile = st.tabs([
+                "Add Employee", "Update Employee", "List Employees", "Employee Profile"
+            ])
+        
+            with add:
+                with st.form("add_employee_form"):
+                    col1, col2 = st.columns(2)
+                     l = []
+                    with col1:
+                        first_name = st.text_input("First Name *")
+                        l.append(first_name)
+                        middle_name = st.text_input("Middle Name (Optional)")
+                        last_name = st.text_input("Last Name *")
+                        l.append(last_name)
+                        gender = st.selectbox("Gender *", ["Male", "Female"])
+                        l.append(gender)
+                        dob = st.date_input("Date of Birth *", min_value=date(1900, 1, 1))
+                        l.append(dob)
+                        phone = st.text_input("Phone Number *")
+                        l.append(phone)
+                        email = st.text_input("Email *")
+                        l.append(email)
+                        address = st.text_area("Address *")
+                        l.append(address)
+                        photo = st.file_uploader("Upload Photo", type=["png", "jpg", "jpeg"])
+                        role = st.selectbox("Role *", options=["Manager", "Employee"])
+                        l.append(role)
+                    with col2:
+                        department = st.text_input("Department *")
+                        l.append(department)
+                        job_name = st.text_input("Job Title / Role")
+                        supervisor = st.text_input("Supervisor")
+                        employment_type = st.selectbox("Employment Type *", ["Full-time", "Part-time"])
+                        l.append(employment_type)
+                        start_date = st.date_input("Start Date *")
+                        l.append(start_date)
+                        status = st.selectbox("Status *", ["Active ", "On Leave", "Inactive", "Resigned"])
+                        l.append(status)
+                        contract_type = st.selectbox("Contract Type *", ["Employee", "Temporary", "Intern"])
+                        l.append(contract_type)
+                        contract_pdf = st.file_uploader("Upload Contract PDF", type=["pdf"])
+                        emergency_phone = st.text_input("Emergency Contact Phone (Optional)")
+                        pwd1 = st.text_input("Password *", type="password", key="pwd1")
+                        l.append(pwd1)
+                        pwd2 = st.text_input("Password *", type="password", key="pwd2")
+                        l.append(pwd2)
+
+                    submit = st.form_submit_button("Add Employee")
+        
+                if submit:
+                    if not all(l):
+                        st.error("Please fill out all fields marked with an asterisk (*)")
+                    else:
+                        if pwd1 == pwd2:
+                            if not check_pwd(pwd):
+                                st.error("Verification Failed: Your password must be at least 10 characters long and include a mix of uppercase letters, lowercase letters, and numbers.") 
+                            else:
+                                emp_payload = {
+                                "first_name": first_name.title(),
+                                "middle_name": middle_name.title() if middle_name else None,
+                                "last_name": last_name.title(),
+                                "gender": gender, 
+                                "dob": str(dob),
+                                "phone": phone,
+                                "email": email,
+                                "address": address,
+                                "photo": save_upload(photo, "photos"), 
+                                "department": department,
+                                "role": role,
+                                "job_name": job_name,
+                                "password": pwd1,
+                                "supervisor": supervisor if supervisor else None,
+                                "employment_type": employment_type,       
+                                "start_date": str(start_date),
+                                "status": status,
+                                "contract_type": contract_type,
+                                "contract_pdf": save_upload(contract_pdf, "contracts"),
+                                "emergency_phone": emergency_phone if emergency_phone else None,
+                                "company_id": st.session_state.user["company_id"]
+                                }
+                                try:
+                                    response = requests.post(API_URL, json=emp_payload, headers=st.session_state.headers)
+                                    if response.status_code == 200:
+                                        st.success("Employee Added Successfully!")
+                                    elif response.status_code == 422:
+                                        st.json(response.json())
+                                except Exception as e:
+                                    st.error(f"Error: {e}")
+                        else:
+                            st.error("Passwords Don't match")
+        
+            with listall:
+                try:
+                    response = requests.get(f"{API_URL}/dataframe", headers=st.session_state.headers)
+                    if response.status_code == 200:
+                        st.dataframe(response.json())
+                    elif response.status_code == 404:
+                        st.warning("No employees found in the database.")
+        
+                except Exception as e:
+                    st.error(f"Error: {e}")
+            
+            with showprofile:
+                try: 
+                    result = requests.get(API_URL, headers=st.session_state.headers)
+                    if result.status_code == 200:
+                        data = result.json()
+                        to_show = st.selectbox(
+                            "Select Employee",
+                            options=list(data.keys()), 
+                            format_func=lambda x: data[x],
+                            key="prof_select"
+                        )
+                        
+                        if st.button("Show Profile", width='stretch', key="prof_btn"):
+                            emp_api = requests.get(f"{API_URL}/{to_show}")
+                            if emp_api.status_code == 200:
+                                root = os.getenv("UPLOADS_ROOT", "/myapp/uploads")
+                                emp = Employee_s(**emp_api.json())
+                                emp.photo = os.path.join(root, emp.photo)
+                                pdf_path = os.path.join(root, emp.contract_pdf)
+        
+                                st.markdown("### Employee Profile")
+                                c1, c2 = st.columns([1, 3])
+                                with c1:
+                                    st.image(emp.photo, use_container_width=True)
+                                    st.write(f"**Status:** {emp.status.value}")
+                                with c2:
+                                    st.header(f"{emp.first_name} {emp.last_name}")
+                                    st.caption(f"{emp.role} | {emp.department}")
+                                    st.write(f"**Email:** {emp.email}")
+                                    st.write(f"**Phone:** {emp.phone}")
+                                    st.divider()
+                                    
+                                    with open(pdf_path, "rb") as f:
+                                        b64_pdf = base64.b64encode(f.read()).decode('utf-8')
+                                    
+                                    pdf_view = f'<iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="600" type="application/pdf"></iframe>'
+                                    st.markdown(pdf_view, unsafe_allow_html=True)
+                                    st.download_button("Download PDF", base64.b64decode(b64_pdf), f"contract_{emp.id}.pdf", "application/pdf", key=f"dl_{emp.id}")
+                                                    
+                                if st.button("Refresh", key=f"re_{emp.id}"):
+                                    st.rerun()
+                    elif result.status_code == 404:
+                        st.warning("No employees found in the database.")
+                except Exception as e:
+                    st.error(f"Error: {e}")
+        if st.session_state.page == "Leave Requests":
+            
+            def display_pdf(base64_pdf):
+                pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>'
+                st.markdown(pdf_display, unsafe_allow_html=True)
+            
+            res = requests.get(f"{API_URL_REQ}/AdMan", headers=st.session_state.headers)
+            requests_list = res.json()
+            
+            if not requests_list:
+                st.info("No pending requests found.")
+            else:
+                for req in requests_list:
+                    st.subheader(f"Request from: {req['first_name']} {req['last_name']}")
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.write(f"**Employee ID:** {req['emp_id']}")
+                        st.write(f"**Request Date:** {req['date']}")
+                        st.write(f"**Reason:** {req['reason']}")
+                        
+                    with col2:
+                        st.write(f"**Start Date:** {req['start_date']}")
+                        st.write(f"**End Date:** {req['end_date']}")
+            
+                    btn_col1, btn_col2, btn_col3 = st.columns([1, 1, 2])
+                    
+                    with btn_col1:
+                        if st.button("Accept", key=f"acc_{req['id']}"):
+                            try:
+                                payload = {"id": req['id'], "status": "Approved"}
+                                requests.get(f"{API_URL_REQ}/AdMan", params=payload, headers=st.session_state.headers)
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"backend error: {e}")
+            
+                    with btn_col2:
+                        if st.button("Reject", key=f"rej_{req['id']}"):
+                            try:
+                                payload = {"id": req['id'], "status": "Rejected"}
+                                requests.get(f"{API_URL_REQ}/AdMan", params=payload, headers=st.session_state.headers)
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"backend error: {e}")
+            
+                    if req.get('doc'):
+                        if st.session_state.get(f"show_{req['id']}", False):
+                            if st.button("Close Preview", key=f"close_{req['id']}"):
+                                st.session_state[f"show_{req['id']}"] = False
+                                st.rerun()
+                            display_pdf(req['doc'])
+                        else:
+                            if st.button("📄 View Document", key=f"view_{req['id']}"):
+                                st.session_state[f"show_{req['id']}"] = True
+                                st.rerun()
+                    else:
+                        st.warning("No document attached.")
+            
+                    st.divider()
     if st.session_state.user["role"] == "Admin":
         
         st.sidebar.title("Navigation")
