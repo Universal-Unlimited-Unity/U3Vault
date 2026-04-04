@@ -15,12 +15,12 @@ router = APIRouter(prefix="/employees", tags=["employees"])
 load_dotenv()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")   
-@router.post("", response_model=Employee)
+@router.post("")
 async def add_api(emp: Annotated[Employee, Body()], auth: Annotated[str, Header()]) -> Employee:
     user = lazy(auth)
-    if user["role"] == "Admin":
+    if user["role"] == "Admin" or user["role"] == "Manager:
         emp.password = pwd_context.hash(emp.password)
-        return add(emp)
+        add(emp)
     else:
         raise HTTPException(status_code=401)
 
