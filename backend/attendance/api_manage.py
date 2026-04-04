@@ -9,8 +9,6 @@ from .db_manage import (
     att_global_analytics,
     att_one_analytics,
     plot_status_trend_global,
-    generate_all_employees_report,
-    generate_single_employee_report,
     pie_plot,
     pie_plot2
 )
@@ -88,12 +86,18 @@ async def att_analytics_all(
 
 @router.get("/analytics/plots")
 async def att_plots(
+    auth: Annotated[str, Header()],
     status: Annotated[str, Query()],
     start: Annotated[str | None, Query()] = None,
     end: Annotated[str | None, Query()] = None,
+    
 ):
-    vf = plot_status_trend_global(status, start, end)
-    return Response(content=vf, media_type="image/png")
+    user = lazy()
+    if not user["role"] == "Employee":
+        vf = plot_status_trend_global(status, start, end)
+        return Response(content=vf, media_type="image/png")
+    else:
+        raise HTTPException(status_code = 401)
 
 @router.get("/analytics/piechart")
 async def att_piechar(
@@ -146,21 +150,3 @@ async def att_analytics_one(
 
     return df.to_dict(orient="records")
 
-
-@router.get("/analytics/reports/{id}")
-async def att_report_one(
-    full_name: Annotated[str, Query()],
-    id: Annotated[str, Path()],
-    start: Annotated[str | None, Query()] = None,
-    end: Annotated[str | None, Query()] = None,
-):
-    df = att_one_analytics(id, start, end)
-
-    if df.empty:
-        raise HTTPException(status_code=404, detail="No Result For this period of time")
-
-    return Response(
-        content=generate_single_employee_report(full_name, id, df, start, end),
-        media_type="application/pdf",
-        headers={"Content-Disposition": 'attachment; filename="attendance_report.pdf"'},
-    )
