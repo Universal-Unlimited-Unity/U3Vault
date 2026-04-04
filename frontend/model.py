@@ -30,7 +30,15 @@ class employment_type(str, Enum):
 class role(str, Enum):
     manager = "Manager"
     employee = "Employee"
-    
+
+class Employee_s(BaseModel):
+    first_name: str
+    last_name: str
+    role: role
+    phone: PhoneNumber
+    email: EmailStr
+    department: str
+
 class Employee(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     job_name: str | None
