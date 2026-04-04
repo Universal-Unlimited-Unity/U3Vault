@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Path, Body, Header, Query
 from typing import Annotated
-from .db_manage import admin_auth, reg_auth, verify_pwd
+from .db_manage import admin_auth, reg_auth, verify_pwd, verify_pwd_admin
 from .model import admin, regular
 from uuid import UUID
 from shared.func import lazy
@@ -31,4 +31,10 @@ async def check_token(auth: Annotated[str, header()]):
   try:
     lazy(auth)
   except jwt.ExpiredSignatureError:
+    raise HTTPException(status_code = 401)
+
+@router.post("/verify/admin)
+async def check_pwd_api(pwd: Annotated[str, Query()], auth: Annotated[str, Header()]):
+  user = lazy(auth)
+  if not verify_pwd_admin(UUID(user["company_id"]), pwd):
     raise HTTPException(status_code = 401)
