@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Path, Header, Body
 from .db_manage import add, listall_selectbox, delete_emp, listall, select_emp, update_emp_by_emp, get_contract
-from .model import Employee
+from .model import Employee, Employee_s
 from typing import Annotated
 from jose import jwt
 from dotenv import load_dotenv
@@ -54,7 +54,7 @@ async def listall_api(auth: Annotated[str, Header()]):
     else:
         return result
 
-@router.get("/{id}", response_model=Employee)
+@router.get("/{id}", response_model=Employee_s)
 async def select_emp_api(id: Annotated[str, Path()], auth: Annotated[str, Header()]):
     user = lazy(auth)
     return select_emp(id)
