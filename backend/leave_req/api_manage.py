@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Body, Header, Query
 from .model import request
-from .db_manage import get_req_by_status, add_req
+from .db_manage import get_req_by_status, add_req, update_req
 from shared.func import lazy 
 from typing import Annotated
 import uuid
@@ -21,6 +21,16 @@ async def get_req(status : Annotated[str, Query()], auth: Annotated[str, Header(
     return get_req_by_status(status, user["id"])
 
 @router.get("/AdMan")
-async def get(auth: Annotated[str, Header()]):
+async def get_req(auth: Annotated[str, Header()]):
     user = lazy(auth)
-    return get_req_for_manager_by_status(uuid.UUID(user["company_id"]))
+    if user["role"] == "Employee":
+      raise HTTPException(status_code = 401)
+    else:
+      return get_req_for_manager_by_status(uuid.UUID(user["company_id"]))
+@router.update("AdMan")
+async def update_req(id: Annotated[uuid.UUID, Query()], status: Annotated[str, Query()], auth: Annotated[str, Header()]):
+  user = lazy()
+  if user["role"] == "Employee":
+    raise HTTPException(status_code = 401)
+  else:    
+    update_req(id, status)
