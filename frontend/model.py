@@ -38,6 +38,9 @@ class Employee_s(BaseModel):
     phone: PhoneNumber
     email: EmailStr
     department: str
+    contract_pdf
+    status: status
+    department: str
 
 class Employee(BaseModel):
     id: UUID = Field(default_factory=uuid4)
