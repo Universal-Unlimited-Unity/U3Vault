@@ -63,3 +63,9 @@ def get_slug(cmp_id: uuid.UUID):
         stmt = select(company.c.slug).where(company.c.id == cmp_id)
         sulg = conn.execute(stmt).fetchone()
         return slug
+
+def update_pwd(cmp_id: uuid.UUID, pwd: str):
+    with eng.connect() as conn:
+        stmt = update(company.c.password).where(company.c.id == cmp_id).values(password = pwd)
+        conn.execute(stmt)
+        conn.commit()
