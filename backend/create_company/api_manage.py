@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Path, Header, Query
-from .db_manage import insert_company, check_slug, generate_slug, cmp_name, get_slug
+from .db_manage import insert_company, check_slug, generate_slug, cmp_name, get_slug, update_pwd
 from .model import Company
 from passlib.context import CryptContext
 from typing import Annotated
@@ -32,3 +32,10 @@ async def get_cmp_name(auth: Annotated[str, Header()]):
 async def get_cmp_slug(auth: Annotated[str, Header()]) -> str:
     user = lazy()
     return get_slug(uuid.UUID(user["company_id"]))
+
+@router.patch("")
+async def update_pwd_api(password: Annotated[str, Query()], auth: Annotated[str, Header()]):
+    user = lazy()
+    update_pwd(uuid.UUID(user["company_id"]), password)
+
+
