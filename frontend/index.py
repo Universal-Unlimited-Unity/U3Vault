@@ -489,7 +489,16 @@ if st.session_state.logged:
                     
         if st.session_state.page == "Employees":
             st.image("front.png", width=160)
-
+            try:
+                slug = requests.ge(f"{API_URL_COMP}/slug", headers = st.session_state.headers)
+                if slug.status_code == 200:
+                    slug = slug.json()
+                    st.markdown(f":red['Your Company Slug Is {slug}, Give To The New Employees Because They Gonna Need It To Login']")
+                else:
+                    st.error("Something Went Wrong")
+            except Exception as e:
+                st.error(f"Backend Error: {e}")
+                
             add, update, listall, showprofile = st.tabs([
                 "Add Employee", "Update Employee", "List Employees", "Employee Profile"
             ])
@@ -668,7 +677,7 @@ if st.session_state.logged:
                         if st.button("Accept", key=f"acc_{req['id']}"):
                             try:
                                 payload = {"id": req['id'], "status": "Approved"}
-                                requests.get(f"{API_URL_REQ}/AdMan", params=payload, headers=st.session_state.headers)
+                                requests.patch(f"{API_URL_REQ}/AdMan", params=payload, headers=st.session_state.headers)
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"backend error: {e}")
@@ -814,200 +823,123 @@ if st.session_state.logged:
                 except Exception as e:
                     st.error(f"Backend Error {e}")
     if st.session_state.user["role"] == "Admin":
-        
-        st.sidebar.title("Navigation")
-        
         if "page" not in st.session_state:
-            st.session_state.page = "home"
-        
-        with st.sidebar.expander("Human Resources"):
-            if st.button("Employees", use_container_width=True):
-                st.session_state.page = "Human Resources/Employees"
-            if st.button("Attendance", use_container_width=True):
-                st.session_state.page = "Human Resources/Attendance"
-            if st.button("Leave Management", use_container_width=True):
-                st.session_state.page = "Human Resources/Leave Management"
-            if st.button("Payroll", use_container_width=True):
-                st.session_state.page = "Human Resources/Payroll"
-        
-        with st.sidebar.expander("Contracts"):
-            st.button("y")
-            
-        with st.sidebar.expander("Organization"):
-            st.button("p")
-        
-        with st.sidebar.expander("Documents"):
-            st.button("d")
-            
-        with st.sidebar.expander("Requests"):
-            st.button("z")
-            
-        with st.sidebar.expander("Reports"):
-            st.button("f")
-            
-        with st.sidebar.expander("Administration"):
-            st.button("q")
-            
-        with st.sidebar.expander("Settings"):
-            st.button("c")
-        
-        if st.session_state.page == "Human Resources/Employees":
-            col1, col2 = st.columns([1,2])
-        
-            with col1:
-                st.image("front.png", width=720)
-        
-            add, delete, update, listall, showprofile = st.tabs([
-                "Add Employee", "Delete Employee", "Update Employee", "List Employees", "Employee Profile"
-            ])
-        
-            with add:
-                with st.form("add_employee_form"):
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        first_name = st.text_input("First Name")
-                        middle_name = st.text_input("Middle Name (Optional)")
-                        last_name = st.text_input("Last Name")
-                        gender = st.selectbox("Gender", ["Male", "Female"])
-                        dob = st.date_input("Date of Birth", min_value=date(1900, 1, 1))
-                        phone = st.text_input("Phone Number")
-                        email = st.text_input("Email")
-                        address = st.text_area("Address")
-                        photo = st.file_uploader("Upload Photo", type=["png", "jpg", "jpeg"])
-                        role = st.selectbox("Role", options=["Manager", "Employee"])
-                    with col2:
-                        department = st.text_input("Department")
-                        job_name = st.text_input("Job Title / Role")
-                        supervisor = st.text_input("Supervisor")
-                        employment_type = st.selectbox("Employment Type", ["Full-time", "Part-time"])
-                        start_date = st.date_input("Start Date")
-                        status = st.selectbox("Status", ["Active", "On Leave", "Inactive", "Resigned"])
-                        contract_type = st.selectbox("Contract Type", ["Employee", "Temporary", "Intern"])
-                        contract_pdf = st.file_uploader("Upload Contract PDF", type=["pdf"])
-                        emergency_phone = st.text_input("Emergency Contact Phone (Optional)")
-                        pwd1 = st.text_input("Password", type="password", key="pwd1")
-                        pwd2 = st.text_input("Password", type="password", key="pwd2")
+            st.session_state.page = "Home"
 
-                    submit = st.form_submit_button("Add Employee")
+        st.sidebar.image("front.png")
+        st.sidebar.title("")
         
-                if submit:
-                    if pwd1 == pwd2:
-                        emp_payload = {
-                            "first_name": first_name.title(),
-                            "middle_name": middle_name.title() if middle_name else None,
-                            "last_name": last_name.title(),
-                            "gender": gender, 
-                            "dob": str(dob),
-                            "phone": phone,
-                            "email": email,
-                            "address": address,
-                            "photo": save_upload(photo, "photos"), 
-                            "department": department,
-                            "role": role,
-                            "job_name": job_name,
-                            "password": pwd1,
-                            "supervisor": supervisor if supervisor else None,
-                            "employment_type": employment_type,       
-                            "start_date": str(start_date),
-                            "status": status,
-                            "contract_type": contract_type,
-                            "contract_pdf": save_upload(contract_pdf, "contracts"),
-                            "emergency_phone": emergency_phone if emergency_phone else None,
-                            "company_id": st.session_state.user["company_id"]
-                        }
-                        try:
-                            response = requests.post(API_URL, json=emp_payload, headers=st.session_state.headers)
-                            if response.status_code == 200:
-                                st.success("Employee Added Successfully!")
-                                st.dataframe(response.json())
-                            elif response.status_code == 422:
-                                st.json(response.json())
-                        except Exception as e:
-                            st.error(f"Error: {e}")
-                    else:
-                        st.error("Passwords Don't match")
+        if st.sidebar.button("Home", width='stretch'):
+            st.session_state.page = "Home"
+        if st.sidebar.button("Delete Employees", width='stretch'):
+            st.session_state.page = "Delete Employees"
+        if st.sidebar.button("Settings", width='stretch'):
+            st.session_state.page = "Settings"
+        if st.sidebar.button("🚪 Logout", width='stretch'):
+            st.session_state.clear()
+            st.rerun()
+
+        if st.session_state.page == "Home":
+            st.image("front.png", width=160)
+            try;
+                cmp_name = requests.get(API_URL_COMP, headers = s.session_state.headers)
+                slug = requests.get(f"{API_URL_COMP}/slug", headers = s.session_state.headers)
+                if cmp_name.status_code == 200 and slug.status_code == 200:
+                    cmp_name = cmp_name.json()
+                    slug = slug.json()
+                else:
+                    st.error("Something Went Wrong")
+                    st.stop()
+            except Exception as e:
+                st.error(f"Backend Error {e}")
+                
+            st.markdown(f"""
+                <div style="text-align: center; padding: 20px;">
+                    <h1 style="color: #007bff; margin-bottom: 0;">Welcome to the Admin Panel</h1>
+                    <h3 style="color: #6c757d; margin-top: 5px;">
+                        for {cmp_name} (ID: {st.session_state.user["company_id"]})
+                    </h3>
+                    <p style="color: #adb5bd; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
+                        {slug}
+                    </p>
+                </div>
+            """, unsafe_allow_html=True)
+
+            st.divider()
+        if st.session_state.page == "Delete Employees":
+            st.image("front.png", width=160)
+            try: 
+                result = requests.get(API_URL, headers=st.session_state.headers)
+                if result.status_code == 200:
+                    data = result.json()
+                    to_delete = st.selectbox(
+                        "Select Employee",
+                        options=list(data.keys()), 
+                        format_func=lambda x: data[x],
+                        key="del_select"
+                    )
+                    if st.button("Confirm Deletion", use_container_width=True, key="del_confirm"):
+                        deleted = requests.delete(f"{API_URL}/{to_delete}", headers=st.session_state.headers)
+                        if deleted.status_code == 200:
+                            st.success("Employee Deleted Successfully!")
+                            st.info("Info of Deleted Employee:")
+                            st.dataframe(deleted.json())
+                            if st.button("Clear and Refresh"):
+                                st.rerun()
+                elif result.status_code == 404:
+                    st.warning("No employees found in the database.")               
+            except Exception as e:
+                st.error(f"Error: {e}")
+        if st.session_state.page == "Settings":
+            st.image("front.png", width=160)
+            if "verify" not in st.session_state:
+                st.session_state.verify = None
+            if not st.session_state.verify:
+                pwd = st.text_input("Password", placeholder="Please Enter Your Password To Verify Your Identity", type="password")
+                if st.button("Verify", width='stretch'):
+                    try:
+                        query = {"pwd": pwd}
+                        res = requests.post(f"{API_URL_AUTH}/verify/admin", headers=st.session_state.headers, params= query)
+                        if res.status_code == 200:
+                            st.session_state.verify = True
+                            st.rerun()
+                        elif res.status_code == 401:
+                            st.error("Wrong Password")
                         
-            with delete:
-                try: 
-                    result = requests.get(API_URL, headers=st.session_state.headers)
-                    if result.status_code == 200:
-                        data = result.json()
-                        to_delete = st.selectbox(
-                            "Select Employee",
-                            options=list(data.keys()), 
-                            format_func=lambda x: data[x],
-                            key="del_select"
-                        )
-                        if st.button("Confirm Deletion", use_container_width=True, key="del_confirm"):
-                            deleted = requests.delete(f"{API_URL}/{to_delete}", headers=st.session_state.headers)
-                            if deleted.status_code == 200:
-                                st.success("Employee Deleted Successfully!")
-                                st.info("Info of Deleted Employee:")
-                                st.dataframe(deleted.json())
-                                if st.button("Clear and Refresh"):
-                                    st.rerun()
-                    elif result.status_code == 404:
-                        st.warning("No employees found in the database.")               
-                except Exception as e:
-                    st.error(f"Error: {e}")
+                    except Exception as e:
+                        st.error(f"Backend Error: {e}")
+            else:
+                tab1 = st.tabs(["Change Password"])
+                with tab1:
+                    with st.form("password"):
+                        pwd1 = st.text_input("Password*", key='pwd1', type='password')
+                        pwd2 = st.text_input("Confrim Password*", key='pwd2', type='password')
+                        submit = st.form_submit_button("Submit", width='stretch', key='1')
+
+                    if submit:
+                        if not pwd1 or not pwd2:
+                            st.error("Please fill out all fields marked with an asterisk (*)")
+                        elif pwd1 != pwd2:
+                            st.error("Passwords Don't Match")
+                    
+                        else:
+                            if not check_pwd(pwd1):
+                                st.error("Verification Failed: Your password must be at least 10 characters long and include a mix of uppercase letters, lowercase letters, and numbers.")                                  
+                                
+                            else:
+                                payload = {"password": pwd1}
+                                try:
+                                    res = requests.patch(API_URL_COMP, headers=st.session_state.headers, json=payload)
+                                    if res.status_code == 200:
+                                        st.success("Password Updated!")
+                                except Exception as e:
+                                    st.error(f"Backend Error: {e}")
+                    st.divider()
+                    if st.button("Close Settings", key='close 1', width='stretch'):
+                        st.session_state.verify = None
+                        st.rerun()
         
-            with listall:
-                try:
-                    response = requests.get(f"{API_URL}/dataframe", headers=st.session_state.headers)
-                    if response.status_code == 200:
-                        st.dataframe(response.json())
-                    elif response.status_code == 404:
-                        st.warning("No employees found in the database.")
-        
-                except Exception as e:
-                    st.error(f"Error: {e}")
-            
-            with showprofile:
-                try: 
-                    result = requests.get(API_URL, headers=st.session_state.headers)
-                    if result.status_code == 200:
-                        data = result.json()
-                        to_show = st.selectbox(
-                            "Select Employee",
-                            options=list(data.keys()), 
-                            format_func=lambda x: data[x],
-                            key="prof_select"
-                        )
-                        
-                        if st.button("Show Profile", width='stretch', key="prof_btn"):
-                            emp_api = requests.get(f"{API_URL}/{to_show}")
-                            if emp_api.status_code == 200:
-                                root = os.getenv("UPLOADS_ROOT", "/myapp/uploads")
-                                emp = Employee(**emp_api.json())
-                                emp.photo = os.path.join(root, emp.photo)
-                                pdf_path = os.path.join(root, emp.contract_pdf)
-        
-                                st.markdown("### Employee Profile")
-                                c1, c2 = st.columns([1, 3])
-                                with c1:
-                                    st.image(emp.photo, use_container_width=True)
-                                    st.write(f"**Status:** {emp.status.value}")
-                                with c2:
-                                    st.header(f"{emp.first_name} {emp.last_name}")
-                                    st.caption(f"{emp.role} | {emp.department}")
-                                    st.write(f"**Email:** {emp.email}")
-                                    st.write(f"**Phone:** {emp.phone}")
-                                    st.divider()
-                                    
-                                    with open(pdf_path, "rb") as f:
-                                        b64_pdf = base64.b64encode(f.read()).decode('utf-8')
-                                    
-                                    pdf_view = f'<iframe src="data:application/pdf;base64,{b64_pdf}" width="100%" height="600" type="application/pdf"></iframe>'
-                                    st.markdown(pdf_view, unsafe_allow_html=True)
-                                    st.download_button("Download PDF", base64.b64decode(b64_pdf), f"contract_{emp.id}.pdf", "application/pdf", key=f"dl_{emp.id}")
-                                                    
-                                if st.button("Refresh", key=f"re_{emp.id}"):
-                                    st.rerun()
-                    elif result.status_code == 404:
-                        st.warning("No employees found in the database.")
-                except Exception as e:
-                    st.error(f"Error: {e}")
-        if st.session_state.page == "Human Resources/Attendance":
+        if st.session_state.page == "Attendance":
             if "case" not in st.session_state:
                 st.session_state.case = False
             if "emps" not in st.session_state:
