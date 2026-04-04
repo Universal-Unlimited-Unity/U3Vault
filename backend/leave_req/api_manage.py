@@ -27,7 +27,7 @@ async def get_req(auth: Annotated[str, Header()]):
       raise HTTPException(status_code = 401)
     else:
       return get_req_for_manager_by_status(uuid.UUID(user["company_id"]))
-@router.update("AdMan")
+@router.patch("AdMan")
 async def update_req(id: Annotated[uuid.UUID, Query()], status: Annotated[str, Query()], auth: Annotated[str, Header()]):
   user = lazy()
   if user["role"] == "Employee":
