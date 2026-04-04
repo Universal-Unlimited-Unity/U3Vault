@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Path, Header, Body
 from .db_manage import add, listall_selectbox, delete_emp, listall, select_emp, update_emp_by_emp, get_contract
-from .model import Employee, Employee_s
+from .model import Employee, Employee_s, Employee_for_listall
 from typing import Annotated
 from jose import jwt
 from dotenv import load_dotenv
@@ -43,7 +43,7 @@ async def update_by_emp(auth: Annotated[str, Header()], update: Annotated[Update
     id = UUID(user["id"])
     update_emp_by_emp(id, update)
     
-@router.get("/dataframe", response_model=list[Employee])
+@router.get("/dataframe", response_model=list[Employee_for_listall])
 async def listall_api(auth: Annotated[str, Header()]):
     user = lazy(auth)
     if user["role"] == "Employee":
