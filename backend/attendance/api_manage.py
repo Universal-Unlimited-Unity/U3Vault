@@ -11,7 +11,8 @@ from .db_manage import (
     plot_status_trend_global,
     generate_all_employees_report,
     generate_single_employee_report,
-    pie_plot
+    pie_plot,
+    pie_plot2
 )
 from typing import Annotated
 from .model import Attendance
@@ -94,7 +95,18 @@ async def att_plots(
     vf = plot_status_trend_global(status, start, end)
     return Response(content=vf, media_type="image/png")
 
-
+@router.get("/analytics/piechart")
+async def att_piechar(
+                    auth: Annotated[str, Header()],
+                    start: Annotated[str | None, Query()] = None,
+                    end: Annotated[str | None, Query()] = None
+):
+    user = lazy(auth)
+    if user["role"] == "Employee":
+        raise HTTPException(status_code=401)
+    vf = pie_plot2(start, end)
+    return Response(content=vf, media_type="image/png")
+    
 @router.get("/records/{id}")
 async def att_record_one(
     id: Annotated[UUID, Path()],
