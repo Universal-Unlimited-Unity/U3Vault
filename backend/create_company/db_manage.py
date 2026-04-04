@@ -3,7 +3,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from .model import Company
 from db.db_connect import db_connect, metadata
 from datetime import datetime
-
+import uuid
 eng = db_connect()
 
 company = Table(
@@ -57,3 +57,9 @@ def cmp_name(id: str):
         stmt = select(company.c.name).where(company.c.id == id)
         row = conn.execute(stmt).fetchone()
         return row.name
+
+def get_slug(cmp_id: uuid.UUID):
+    with eng.connect() as conn:
+        stmt = select(company.c.slug).where(company.c.id == cmp_id)
+        sulg = conn.execute(stmt).fetchone()
+        return slug
