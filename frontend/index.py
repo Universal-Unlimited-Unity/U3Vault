@@ -696,6 +696,123 @@ if st.session_state.logged:
                         st.warning("No document attached.")
             
                     st.divider()
+        if st.session_state.page == "Settings":
+            st.image("front.png", width=160)
+            if "verify" not in st.session_state:
+                st.session_state.verify = None
+            if not st.session_state.verify:
+                pwd = st.text_input("Password", placeholder="Please Enter Your Password To Verify Your Identity", type="password")
+                if st.button("Verify", width='stretch'):
+                    try:
+                        query = {"pwd": pwd}
+                        res = requests.post(f"{API_URL_AUTH}/verify", headers=st.session_state.headers, params= query)
+                        if res.status_code == 200:
+                            st.session_state.verify = True
+                            st.rerun()
+                        elif res.status_code == 401:
+                            st.error("Wrong Password")
+                        
+                    except Exception as e:
+                        st.error(f"Backend Error: {e}")
+            else:
+                tab1, tab2, tab3 = st.tabs(["Change Password", "Change Phone Number", "Add/Change Emergency Phone"])
+                with tab1:
+                    with st.form("password"):
+                        pwd1 = st.text_input("Password*", key='pwd1', type='password')
+                        pwd2 = st.text_input("Confrim Password*", key='pwd2', type='password')
+                        submit = st.form_submit_button("Submit", width='stretch', key='1')
+
+                    if submit:
+                        if not pwd1 or not pwd2:
+                            st.error("Please fill out all fields marked with an asterisk (*)")
+                        elif pwd1 != pwd2:
+                            st.error("Passwords Don't Match")
+                    
+                        else:
+                            if not check_pwd(pwd1):
+                                st.error("Verification Failed: Your password must be at least 10 characters long and include a mix of uppercase letters, lowercase letters, and numbers.")                                  
+                                
+                            else:
+                                payload = {"password": pwd1}
+                                try:
+                                    res = requests.patch(API_URL, headers=st.session_state.headers, json=payload)
+                                    if res.status_code == 200:
+                                        st.success("Password Updated!")
+                                except Exception as e:
+                                    st.error(f"Backend Error: {e}")
+                    st.divider()
+                    if st.button("Close Settings", key='close 1', width='stretch'):
+                        st.session_state.verify = None
+                        st.rerun()
+                with tab2:
+                    with st.form("phone"):
+                        p1 = st.text_input("Phone Number*", key='p1')
+                        p2 = st.text_input("Phone Number*", key='p2')
+                        submit = st.form_submit_button("Submit", width='stretch', key='2')
+                    if submit:
+                        if not p1 or not p2:
+                            st.error("Please fill out all fields marked with an asterisk (*)")
+
+                        elif p1 != p2:
+                            st.error("Numbers Don't Match")
+                        
+                        else:
+                            payload = {"phone": p1}
+                            try:
+                                res = requests.patch(API_URL, headers=st.session_state.headers, json=payload)
+                                if res.status_code == 200:
+                                    st.success("Phone Updated!")
+                                elif res.status_code == 422:
+                                    st.error("Please Enter a Valid Phone NUmber, e. g +2126XXXXXXXX")
+                            except Exception as e:
+                                st.error(f"Backend Error: {e}")
+                    st.divider()
+                    if st.button("Close Settings", key='close 2', width='stretch'):
+                        st.session_state.verify = None
+                        st.rerun()
+                with tab3:
+                    with st.form("emer phone"):
+                        ep1 = st.text_input("Emergency Phone", key='ep1')
+                        ep2 = st.text_input("Emergency Phone", key='ep2')
+                        submit = st.form_submit_button("Submit", key='3', width='stretch')
+                    if submit:
+                        if not ep1 or not ep2:
+                            st.error("Please fill out all fields marked with an asterisk (*)")
+
+                        elif ep1 != ep2:
+                            st.error("Numbers Don't Match")
+                        else:
+                            payload = {"emergency_phone": ep1}
+                            try:
+                                res = requests.patch(API_URL, headers=st.session_state.headers, json=payload)
+                                if res.status_code == 200:
+                                    st.success("Emergency Phone Updated!")
+                                elif res.status_code == 422:
+                                    st.error("Please Enter a Valid Phone NUmber, e. g +2126XXXXXXXX")
+                            except Exception as e:
+                                st.error(f"Backend Error: {e}") 
+                    st.divider()
+                    if st.button("Close Settings", key='close 3', width='stretch'):
+                        st.session_state.verify = None
+                        st.rerun()
+        if st.session_state.page == "Contract":
+            st.image("front.png", width=160)
+            if st.button("View Contract", width='stretch'):
+                st.divider()
+                try:
+                    res = requests.get(f"{API_URL}/contracts/{st.session_state.user["id"]}", headers = st.session_state.headers)
+                    if res.status_code == 200:
+                        res = res.json()
+                        file_path = os.path.join(root, res)
+                        with open(file_path, "rb") as f:
+                            base64_pdf = base64.b64encode(f.read()).decode("utf-8")
+                        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="700" height="1000" type="application/pdf"></iframe>'
+                        st.markdown(pdf_display, unsafe_allow_html=True)
+
+                    elif res.status_code == 404:
+                        st.error("Your Contract Was Not Uploaded")
+                except Exception as e:
+                    st.error(f"Backend Error {e}")
     if st.session_state.user["role"] == "Admin":
         
         st.sidebar.title("Navigation")
