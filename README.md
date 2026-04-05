@@ -1,11 +1,8 @@
 # U3Vault
-
+> Many startups lose their data due to poor systems and lack of secure infrastructure — that's exactly why we built U3Vault.
 > **A comprehensive employee management and vault system** — built with FastAPI, Streamlit, and PostgreSQL, featuring JWT authentication, role-based access control, and powerful HR tools.
-
 ---
-
 ## Table of Contents
-
 - [Overview](#overview)
 - [Key Features](#key-features)
 - [Technology Stack](#technology-stack)
@@ -15,25 +12,17 @@
 - [API Endpoints](#api-endpoints)
 - [Contributing](#contributing)
 - [ScreenShots](#ScreenShots)
-
 ---
-
 ## Overview
-
 U3Vault is a full-stack HR and employee management platform designed for organizations that need a secure, centralized vault for employee data. It provides a clean **Streamlit** frontend for both admins and employees, backed by a robust **FastAPI** REST API and a **PostgreSQL** database.
-
 Whether you're managing employee records, tracking attendance, handling leave requests, or storing contract documents, U3Vault has you covered — all protected by industry-standard JWT authentication and bcrypt password hashing.
-
 ---
-
 ## Key Features
-
 ### 🔐 Security
 - **JWT Token Authentication** — Stateless, expiring tokens (60-minute default) issued via `python-jose` with HS256 algorithm
 - **Bcrypt Password Hashing** — Passwords are hashed using `passlib` with bcrypt; plain-text passwords are never stored
 - **Strong Password Policy** — Enforced password requirements: minimum 10 characters, at least one uppercase letter, one lowercase letter, and one digit
 - **Token Verification Endpoints** — Dedicated endpoints to validate active tokens and re-authenticate users before sensitive actions
-
 ### 👥 Role-Based Access Control
 Three distinct roles with scoped permissions:
 | Role | Capabilities |
@@ -41,19 +30,16 @@ Three distinct roles with scoped permissions:
 | **Admin** | Full access — manage company settings, create/delete employees |
 | **Manager** | Manage employees, approve/reject leave requests, view attendance analytics |
 | **Employee** | View own profile, update own info, submit leave requests, view own attendance |
-
 ### 🏢 Employee Management
 - Full **CRUD operations** for employee records
 - Rich employee profiles: name, job title, department, role, supervisor, gender, date of birth, address, and employment details
 - Support for multiple **contract types** (Employee, Temporary, Intern) and **employment types** (Full-time, Part-time)
 - Employee **status tracking**: Active, On Leave, Inactive, Resigned
 - Profile **photo upload** and **contract PDF** storage
-
 ### 📅 Leave Request System
 - Employees can submit leave requests directly from the interface
 - Managers can view, approve, or reject requests via a dedicated management endpoint
 - Status tracking for all leave requests
-
 ### 📊 Attendance Tracking
 - Log daily attendance for all employees
 - Date-conflict detection to prevent duplicate entries
@@ -61,26 +47,20 @@ Three distinct roles with scoped permissions:
 - **Analytics & Reports**: global and per-employee attendance analytics
 - **Visual Charts**: trend plots and pie charts (returned as PNG images)
 - PDF report generation for attendance data
-
 ### 📄 Document Management
 - Store and retrieve employee **contract PDFs**
 - Shared volume ensures both backend and frontend can access uploaded files seamlessly
-
 ### ✅ Data Validation
 - **Phone number validation** with international country code support (`pydantic-extra-types` + `phonenumbers`)
 - **Email validation** via Pydantic's `EmailStr`
 - **Enum-enforced fields** for gender, status, contract type, employment type, and role
 - Full request body validation through Pydantic models on every endpoint
-
 ### 🏗️ Company Management
 - Register your company with a unique **auto-generated slug** (used as a tenant identifier for employee login)
 - Company slug lookup and password update support
 - Multi-tenant ready architecture
-
 ---
-
 ## Technology Stack
-
 | Layer | Technology |
 |-------|-----------|
 | **Backend** | FastAPI, Python 3.12 |
@@ -93,11 +73,8 @@ Three distinct roles with scoped permissions:
 | **Analytics** | Pandas, Matplotlib, Seaborn |
 | **PDF Generation** | fpdf |
 | **Containerization** | Docker, Docker Compose |
-
 ---
-
 ## Project Structure
-
 ```
 U3Vault/
 ├── docker-compose.yml          # Orchestrates backend, frontend, and PostgreSQL
@@ -124,32 +101,21 @@ U3Vault/
     ├── dockerfile
     └── reqs.txt                # Frontend Python dependencies
 ```
-
 ---
-
 ## Getting Started
-
 ### Prerequisites
-
 Make sure you have the following installed:
-
 - [Git](https://git-scm.com/)
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
-
 ### Installation
-
 1. **Clone the repository**
-
    ```bash
    git clone https://github.com/Universal-Unlimited-Unity/U3Vault.git
    cd U3Vault
    ```
-
 2. **Configure environment variables**
-
    Review and update the backend environment file before starting:
-
    ```bash
    # backend/.env
    POSTGRES_USER="postgres"
@@ -159,48 +125,32 @@ Make sure you have the following installed:
    TOKEN_KEY="your_secret_key"
    ALGO="HS256"
    ```
-
    > ⚠️ Change `TOKEN_KEY` and `POSTGRES_PASSWORD` to strong, unique values before deploying.
-
 3. **Start all services**
-
    ```bash
    docker compose up --build
    ```
-
    Docker Compose will spin up three containers:
    - `db` — PostgreSQL 15 database
    - `backend` — FastAPI application
    - `frontend` — Streamlit web interface
-
 4. **Access the application**
-
    | Service | URL |
    |---------|-----|
    | **Frontend (Streamlit)** | http://localhost:8501 |
    | **Backend API** | http://localhost:8000 |
    | **API Docs (Swagger)** | http://localhost:8000/docs |
-
 ### Database Initialization
-
 The database tables are created automatically on first startup via SQLAlchemy. No manual migration steps are required.
-
 ### Development Mode (Live Reload)
-
 The `docker-compose.yml` includes a `develop.watch` configuration for live sync:
-
 ```bash
 docker-compose watch
 ```
-
 This will sync file changes from your local machine into the containers and rebuild automatically when `reqs.txt` changes.
-
 ---
-
 ## Configuration
-
 All configuration is managed via the `backend/.env` file:
-
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `POSTGRES_USER` | PostgreSQL username | `postgres` |
@@ -209,13 +159,9 @@ All configuration is managed via the `backend/.env` file:
 | `TOKEN_EXP_MIN` | JWT token expiration in minutes | `60` |
 | `TOKEN_KEY` | Secret key for signing JWT tokens | *(set your own)* |
 | `ALGO` | JWT signing algorithm | `HS256` |
-
 ---
-
 ## API Endpoints
-
 All endpoints require an `Authorization: Bearer <token>` header unless otherwise noted.
-
 ### Authentication — `/auth`
 | Method | Path | Description | Auth Required |
 |--------|------|-------------|:---:|
@@ -223,7 +169,6 @@ All endpoints require an `Authorization: Bearer <token>` header unless otherwise
 | `POST` | `/auth/verify` | Verify a user's current password | ✅ |
 | `POST` | `/auth/verify/token` | Check if the current token is still valid | ✅ |
 | `POST` | `/auth/verify/admin` | Verify the Admin's password before sensitive actions | ✅ |
-
 ### Company — `/company`
 | Method | Path | Description | Auth Required |
 |--------|------|-------------|:---:|
@@ -232,7 +177,6 @@ All endpoints require an `Authorization: Bearer <token>` header unless otherwise
 | `GET` | `/company/slug` | Get company login slug | ✅ |
 | `GET` | `/company/{name}` | Generate a slug from a company name | ❌ |
 | `PATCH` | `/company` | Update company password | ✅ |
-
 ### Employees — `/employees`
 | Method | Path | Description | Auth Required |
 |--------|------|-------------|:---:|
@@ -243,7 +187,6 @@ All endpoints require an `Authorization: Bearer <token>` header unless otherwise
 | `PATCH` | `/employees` | Employee updates their own profile | ✅ |
 | `DELETE` | `/employees/{id}` | Delete an employee (Admin only) | ✅ |
 | `GET` | `/employees/contracts/{id}` | Retrieve an employee's contract PDF | ✅ |
-
 ### Attendance — `/attendance`
 | Method | Path | Description | Auth Required |
 |--------|------|-------------|:---:|
@@ -258,7 +201,6 @@ All endpoints require an `Authorization: Bearer <token>` header unless otherwise
 | `GET` | `/attendance/analytics/piechart` | Global pie chart (Admin/Manager) | ✅ |
 | `GET` | `/attendance/analytics/piechart/{id}` | Per-employee pie chart | ✅ |
 | `GET` | `/attendance/analytics/reports` | Generate PDF attendance report | ❌ |
-
 ### Leave Requests — `/requests`
 | Method | Path | Description | Auth Required |
 |--------|------|-------------|:---:|
@@ -266,36 +208,19 @@ All endpoints require an `Authorization: Bearer <token>` header unless otherwise
 | `GET` | `/requests` | Get own leave requests by status (Employee) | ✅ |
 | `GET` | `/requests/AdMan` | Get all leave requests (Admin/Manager) | ✅ |
 | `PATCH` | `/requests/AdMan` | Approve or reject a leave request (Admin/Manager) | ✅ |
-
 ---
-
 ## ScreenShots
-![](s1.png)
-![](Screenshot 2026-04-05 6.30.59 AM.png)
-![]()
-![]()
-![]()
-![]()
-![]()
-![]()
-
+Please navigate to the folder `screenshots` to see all screenshots.
 ## Contributing
-
 Contributions are welcome! Here's how to get started:
-
 1. **Fork** the repository
 2. **Create** a feature branch: `git checkout -b feature/my-feature`
 3. **Commit** your changes: `git commit -m "Add my feature"`
 4. **Push** to your branch: `git push origin feature/my-feature`
 5. **Open** a Pull Request
-
 Please make sure your code follows the existing style and that any new API endpoints are properly validated and protected.
-
 ---
-
-
 ---
-
 <div align="center">
   <sub>Built with ❤️ by the Universal Unlimited Unity</sub>
 </div>
