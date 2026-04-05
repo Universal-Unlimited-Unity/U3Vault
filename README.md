@@ -15,7 +15,6 @@
 - [API Endpoints](#api-endpoints)
 - [Screenshots](#screenshots)
 - [Contributing](#contributing)
-- [License](#license)
 
 ---
 
@@ -137,7 +136,6 @@ Make sure you have the following installed:
 - [Git](https://git-scm.com/)
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
-- [Go](https://go.dev/dl/) *(required for auxiliary tooling and scripts)*
 
 ### Installation
 
@@ -273,19 +271,6 @@ All endpoints require an `Authorization: Bearer <token>` header unless otherwise
 
 ## Screenshots
 
-> 📸 *Screenshots coming soon — add your application screenshots here!*
-
-<!-- 
-  Replace the placeholders below with actual screenshots of your application.
-  Recommended sections to capture:
-  - Login screen
-  - Admin dashboard
-  - Employee list view
-  - Employee profile page
-  - Attendance tracking page
-  - Leave request management
-  - Analytics / charts
--->
 
 ### Login
 ![Login Screen](docs/screenshots/login.png)
@@ -295,12 +280,16 @@ All endpoints require an `Authorization: Bearer <token>` header unless otherwise
 
 ### Employee Management
 ![Employee Management](docs/screenshots/employee-management.png)
+![Employee Management](docs/screenshots/employee-management2.png)
+![Employee Management](docs/screenshots/employee-management3.png)
 
 ### Attendance Analytics
-![Attendance Analytics](docs/screenshots/attendance-analytics.png)
-
+![Attendance Analytics 1](docs/screenshots/attendance-analytics.png)
+![Attendance Analytics 2](docs/screenshots/attendance-analytics2.png)
+![Attendance Analytics 3](docs/screenshots/attendance-analytics3.png)
 ### Leave Request Management
-![Leave Requests](docs/screenshots/leave-requests.png)
+![Leave Requests 1](docs/screenshots/leave-requests.png)
+![Leave Requests 2](docs/screenshots/leave-requests2.png)
 
 ---
 
