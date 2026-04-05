@@ -39,7 +39,7 @@ Whether you're managing employee records, tracking attendance, handling leave re
 Three distinct roles with scoped permissions:
 | Role | Capabilities |
 |------|-------------|
-| **Admin** | Full access — manage company settings, create/delete employees, view all data |
+| **Admin** | Full access — manage company settings, create/delete employees |
 | **Manager** | Manage employees, approve/reject leave requests, view attendance analytics |
 | **Employee** | View own profile, update own info, submit leave requests, view own attendance |
 
@@ -52,7 +52,7 @@ Three distinct roles with scoped permissions:
 
 ### 📅 Leave Request System
 - Employees can submit leave requests directly from the interface
-- Managers and Admins can view, approve, or reject requests via a dedicated management endpoint
+- Managers can view, approve, or reject requests via a dedicated management endpoint
 - Status tracking for all leave requests
 
 ### 📊 Attendance Tracking
