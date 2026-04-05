@@ -5,6 +5,7 @@ from passlib.context import CryptContext
 from typing import Annotated
 from shared.func import lazy, check_pwd
 import uuid
+from sqlalchemy.exc import IntegrityError
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 router = APIRouter(prefix="/company", tags=["company"])
@@ -12,26 +13,27 @@ router = APIRouter(prefix="/company", tags=["company"])
 async def create_company_api(company: Company):
     if not check_pwd(company.password):
         raise HTTPException(status_code = 404)
-    company.password = pwd_context.hash(company.password)    
-    company_id = insert_company(company)
-    if not company_id:
-        raise HTTPException(status_code=500, detail="Failed to create company")
-    return str(company_id)
+    company.password = pwd_context.hash(company.password)
+    try:    
+        company_id = insert_company(company)
+        if not company_id:
+            raise HTTPException(status_code=500, detail="Failed to create company")
+        return str(company_id)
+    except IntegrityError as e:
+        raise HTTPException(status_code = 409)
 
-@router.get("/{name}")
-async def gen_slug(name: Annotated[str, Path()]):
-    slug = generate_slug(name)
-    return slug
+@router.get("/slug")
+async def get_cmp_slug(auth: Annotated[str, Header()]) -> str:
+    user = lazy(auth)
+    return get_slug(uuid.UUID(user["company_id"]))
+
 
 @router.get("")
 async def get_cmp_name(auth: Annotated[str, Header()]):
     user = lazy(auth)
     return cmp_name(uuid.UUID(user["company_id"]))
     
-@router.get("/slug")
-async def get_cmp_slug(auth: Annotated[str, Header()]) -> str:
-    user = lazy()
-    return get_slug(uuid.UUID(user["company_id"]))
+
 
 @router.patch("")
 async def update_pwd_api(password: Annotated[str, Query()], auth: Annotated[str, Header()]):
@@ -41,4 +43,7 @@ async def update_pwd_api(password: Annotated[str, Query()], auth: Annotated[str,
     password = pwd_context.hash(password)
     update_pwd(uuid.UUID(user["company_id"]), password)
 
-
+@router.get("/{name}")
+async def gen_slug(name: Annotated[str, Path()]):
+    slug = generate_slug(name)
+    return slug

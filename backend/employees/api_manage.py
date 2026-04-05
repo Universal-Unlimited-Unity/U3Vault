@@ -10,6 +10,7 @@ from shared.func import lazy
 from .update_model import UpdateEmpByEmp
 from uuid import UUID
 from shared.func import check_pwd
+from sqlalchemy.exc import IntegrityError
 router = APIRouter(prefix="/employees", tags=["employees"])
 
 load_dotenv()
@@ -20,7 +21,12 @@ async def add_api(emp: Annotated[Employee, Body()], auth: Annotated[str, Header(
     user = lazy(auth)
     if user["role"] == "Admin" or user["role"] == "Manager":
         emp.password = pwd_context.hash(emp.password)
-        add(emp)
+        try:
+            add(emp)
+            raise HTTPException(status_code=200)
+        except IntegrityError as e:
+            raise HTTPException(status_code=409)
+        
     else:
         raise HTTPException(status_code=401)
 

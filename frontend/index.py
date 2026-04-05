@@ -55,42 +55,48 @@ if not st.session_state.logged:
                 pwd = st.text_input("Password", type="password")
                 submit = st.form_submit_button("Login", width='stretch')
             if submit:
-                payload = {"role": st.session_state.role,
-                           "slug": slug,
-                           "email": email,
-                           "password": pwd
-                          }
-                try:
-                    res = requests.post(f"{API_URL_AUTH}/login", json=payload)
-                    if res.status_code == 200:
-                        st.session_state.token = res.json()["token"]
-                        st.session_state.headers = {"auth": f"Bearer {st.session_state.token}"}
-                        st.session_state.logged = True
-                        st.rerun()
-                    elif res.status_code == 401:
-                        st.error("Wrong Infos")
-                except Exception as e:
-                    st.error(f"Backend Error {res.text}")
+                if all([slug, email, pwd]):
+                    payload = {"role": st.session_state.role,
+                            "slug": slug,
+                            "email": email,
+                            "password": pwd
+                            }
+                    try:
+                        res = requests.post(f"{API_URL_AUTH}/login", json=payload)
+                        if res.status_code == 200:
+                            st.session_state.token = res.json()["token"]
+                            st.session_state.headers = {"auth": f"Bearer {st.session_state.token}"}
+                            st.session_state.logged = True
+                            st.rerun()
+                        elif res.status_code == 401:
+                            st.error("Wrong Infos")
+                    except Exception as e:
+                        st.error(f"Backend Error {res.text}")
+                else:
+                    st.error("You Must Enter All Fields")
         else:
             with st.form("Login", clear_on_submit=True):
                 email = st.text_input("Email")
                 pwd = st.text_input("Password", type="password")
                 submit = st.form_submit_button("Login", width='stretch')
             if submit:
-                payload = {"role": st.session_state.role,
-                           "email": email,
-                           "password": pwd}
-                try:
-                    res = requests.post(f"{API_URL_AUTH}/login", json=payload)
-                    if res.status_code == 200:
-                        st.session_state.token = res.json()["token"]
-                        st.session_state.headers = {"auth": f"Bearer {st.session_state.token}"}
-                        st.session_state.logged = True
-                        st.rerun()
-                    elif res.status_code == 401:
-                        st.error("Wrong Infos")
-                except Exception as e:
-                    st.error(f"Backend Error {e}")
+                if all([email, pwd]):
+                    payload = {"role": st.session_state.role,
+                            "email": email,
+                            "password": pwd}
+                    try:
+                        res = requests.post(f"{API_URL_AUTH}/login", json=payload)
+                        if res.status_code == 200:
+                            st.session_state.token = res.json()["token"]
+                            st.session_state.headers = {"auth": f"Bearer {st.session_state.token}"}
+                            st.session_state.logged = True
+                            st.rerun()
+                        elif res.status_code == 401:
+                            st.error("Wrong Infos")
+                    except Exception as e:
+                        st.error(f"Backend Error {e}")
+                else:
+                    st.error("You Must Enter All Fields")
     else:
         st.title("Create Your Company")
         with st.form("Enter Your Company's Infos", clear_on_submit=True):
@@ -133,6 +139,8 @@ if not st.session_state.logged:
                                     st.error("Couldn't Add Company")
                                 elif res.status_code == 422:
                                     st.error("Make Sure You Provide a Valid Email And Your Phone have contry code: e.g +2126XXXXXXXX")
+                                elif res.status_code == 409:
+                                    st.error("Email Already Used")
                             except Exception as e:
                                 st.error(f"Backend Error {e}")
                     else:
@@ -506,6 +514,7 @@ if st.session_state.logged:
             ])
         
             with add:
+                
                 with st.form("add_employee_form"):
                     col1, col2 = st.columns(2)
                     l = []
@@ -547,18 +556,17 @@ if st.session_state.logged:
                         l.append(pwd1)
                         pwd2 = st.text_input("Password *", type="password", key="pwd2")
                         l.append(pwd2)
-
                     submit = st.form_submit_button("Add Employee")
-        
-                if submit:
-                    if not all(l):
-                        st.error("Please fill out all fields marked with an asterisk (*)")
-                    else:
-                        if pwd1 == pwd2:
-                            if not check_pwd(pwd1):
-                                st.error("Verification Failed: Your password must be at least 10 characters long and include a mix of uppercase letters, lowercase letters, and numbers.") 
-                            else:
-                                emp_payload = {
+                
+                    if submit:
+                        if not all(l):
+                            st.error("Please fill out all fields marked with an asterisk (*)")
+                        elif pwd1 != pwd2:
+                            st.error("Passwords Don't match")
+                        elif not check_pwd(pwd1):
+                            st.error("Verification Failed: Your password must be at least 10 characters long and include a mix of uppercase letters, lowercase letters, and numbers.") 
+                        else:
+                            emp_payload = {
                                 "first_name": first_name.title(),
                                 "middle_name": middle_name.title() if middle_name else None,
                                 "last_name": last_name.title(),
@@ -580,17 +588,19 @@ if st.session_state.logged:
                                 "contract_pdf": save_upload(contract_pdf, "contracts"),
                                 "emergency_phone": emergency_phone if emergency_phone else None,
                                 "company_id": st.session_state.user["company_id"]
-                                }
-                                try:
-                                    response = requests.post(API_URL, json=emp_payload, headers=st.session_state.headers)
-                                    if response.status_code == 200:
-                                        st.success("Employee Added Successfully!")
-                                    elif response.status_code == 422:
-                                        st.json(response.json())
-                                except Exception as e:
-                                    st.error(f"Error: {e}")
-                        else:
-                            st.error("Passwords Don't match")
+                            }
+                            try:
+                                response = requests.post(API_URL, json=emp_payload, headers=st.session_state.headers)
+                                if response.status_code == 200:
+                                    st.success("Employee Added Successfully!")
+                                    st.balloons()
+                                    st.toast("Success!", icon="✅")
+                                elif response.status_code == 422:
+                                    st.error("Make Sure You Provide a Valid Email And Your Phone have country code: e.g +2126XXXXXXXX")
+                                elif response.status_code == 409:
+                                    st.error("Email Already Used")
+                            except Exception as e:
+                                st.error(f"Error: {e}")
         
             with listall:
                 try:
@@ -698,7 +708,10 @@ if st.session_state.logged:
                             if st.button("Close Preview", key=f"close_{req['id']}"):
                                 st.session_state[f"show_{req['id']}"] = False
                                 st.rerun()
-                            display_pdf(req['doc'])
+                            pdf_path = os.path.join(root, req['doc'])
+                            with open(pdf_path, "rb") as f:
+                                pdf_b64 = base64.b64encode(f.read()).decode('utf-8')
+                            display_pdf(pdf_b64)
                         else:
                             if st.button("📄 View Document", key=f"view_{req['id']}"):
                                 st.session_state[f"show_{req['id']}"] = True
@@ -1083,112 +1096,119 @@ if st.session_state.logged:
                     <h3 style="color: #6c757d; margin-top: 5px;">
                         for {cmp_name} (ID: {st.session_state.user["company_id"]})
                     </h3>
-                    <p style="color: #adb5bd; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
-                        {slug}
+                    <p style="color: #007bff; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
+                        Your Company Slug IS <em><b>{slug}</b></em>
                     </p>
                 </div>
             """, unsafe_allow_html=True)
 
             st.divider()
         if st.session_state.page == "Employees":
-            add, delete = st.tabs(["Add Employee", "Delete Employee"])
-            with add:
-                if st.session_state.get("employee_added", False):
-                    st.success("Employee Added Successfully!")
-                    st.balloons()
-                    st.toast("Success!", icon="✅")
-                    if st.button("Add Another Employee"):
-                        st.session_state.employee_added = False
-                        st.rerun()
+            st.image("front.png", width=160)
+            try:
+                slug = requests.get(f"{API_URL_COMP}/slug", headers = st.session_state.headers)
+                if slug.status_code == 200:
+                    slug = slug.json()
+                    st.markdown(f":red['Your Company Slug Is {slug}, Give it To The New Employees Because They Gonna Need It To Login']")
                 else:
-                    with st.form("add_employee_form"):
-                        col1, col2 = st.columns(2)
-                        l = []
-                        with col1:
-                            first_name = st.text_input("First Name *")
-                            l.append(first_name)
-                            middle_name = st.text_input("Middle Name (Optional)")
-                            last_name = st.text_input("Last Name *")
-                            l.append(last_name)
-                            gender = st.selectbox("Gender *", ["Male", "Female"])
-                            l.append(gender)
-                            dob = st.date_input("Date of Birth *", min_value=date(1900, 1, 1))
-                            l.append(dob)
-                            phone = st.text_input("Phone Number *")
-                            l.append(phone)
-                            email = st.text_input("Email *")
-                            l.append(email)
-                            address = st.text_area("Address *")
-                            l.append(address)
-                            photo = st.file_uploader("Upload Photo", type=["png", "jpg", "jpeg"])
-                            role = st.selectbox("Role *", options=["Manager", "Employee"])
-                            l.append(role)
-                        with col2:
-                            department = st.text_input("Department *")
-                            l.append(department)
-                            job_name = st.text_input("Job Title / Role")
-                            supervisor = st.text_input("Supervisor")
-                            employment_type = st.selectbox("Employment Type *", ["Full-time", "Part-time"])
-                            l.append(employment_type)
-                            start_date = st.date_input("Start Date *")
-                            l.append(start_date)
-                            status = st.selectbox("Status *", ["Active", "On Leave", "Inactive", "Resigned"])
-                            l.append(status)
-                            contract_type = st.selectbox("Contract Type *", ["Employee", "Temporary", "Intern"])
-                            l.append(contract_type)
-                            contract_pdf = st.file_uploader("Upload Contract PDF", type=["pdf"])
-                            emergency_phone = st.text_input("Emergency Contact Phone (Optional)")
-                            pwd1 = st.text_input("Password *", type="password", key="pwd1")
-                            l.append(pwd1)
-                            pwd2 = st.text_input("Password *", type="password", key="pwd2")
-                            l.append(pwd2)
-
-                        submit = st.form_submit_button("Add Employee")
+                    st.error("Something Went Wrong")
+            except Exception as e:
+                st.error(f"Backend Error: {e}")
                 
-                        if submit:
-                            if not all(l):
-                                st.error("Please fill out all fields marked with an asterisk (*)")
-                            else:
-                                if pwd1 == pwd2:
-                                    if not check_pwd(pwd1):
-                                        st.error("Verification Failed: Your password must be at least 10 characters long and include a mix of uppercase letters, lowercase letters, and numbers.") 
-                                    else:
-                                        emp_payload = {
-                                            "first_name": first_name.title(),
-                                            "middle_name": middle_name.title() if middle_name else None,
-                                            "last_name": last_name.title(),
-                                            "gender": gender, 
-                                            "dob": str(dob),
-                                            "phone": phone,
-                                            "email": email,
-                                            "address": address,
-                                            "photo": save_upload(photo, "photos"), 
-                                            "department": department,
-                                            "role": role,
-                                            "job_name": job_name,
-                                            "password": pwd1,
-                                            "supervisor": supervisor if supervisor else None,
-                                            "employment_type": employment_type,       
-                                            "start_date": str(start_date),
-                                            "status": status,
-                                            "contract_type": contract_type,
-                                            "contract_pdf": save_upload(contract_pdf, "contracts"),
-                                            "emergency_phone": emergency_phone if emergency_phone else None,
-                                            "company_id": st.session_state.user["company_id"]
-                                        }
-                                        try:
-                                            response = requests.post(API_URL, json=emp_payload, headers=st.session_state.headers)
-                                            if response.status_code == 200:
-                                                st.session_state.employee_added = True
-                                                st.rerun()
-                                            elif response.status_code == 422:
-                                                st.error("Make Sure You Provide a Valid Email And Your Phone have contry code: e.g +2126XXXXXXXX")
-                                        except Exception as e:
-                                            st.error(f"Error: {e}")
-                                else:
-                                    st.error("Passwords Don't match")
+            
+            add, delete = st.tabs(["Add Employee", "Delete Employee"])
+            
+            with add:
+                
+                with st.form("add_employee_form"):
+                    col1, col2 = st.columns(2)
+                    l = []
+                    with col1:
+                        first_name = st.text_input("First Name *")
+                        l.append(first_name)
+                        middle_name = st.text_input("Middle Name (Optional)")
+                        last_name = st.text_input("Last Name *")
+                        l.append(last_name)
+                        gender = st.selectbox("Gender *", ["Male", "Female"])
+                        l.append(gender)
+                        dob = st.date_input("Date of Birth *", min_value=date(1900, 1, 1))
+                        l.append(dob)
+                        phone = st.text_input("Phone Number *")
+                        l.append(phone)
+                        email = st.text_input("Email *")
+                        l.append(email)
+                        address = st.text_area("Address *")
+                        l.append(address)
+                        photo = st.file_uploader("Upload Photo", type=["png", "jpg", "jpeg"])
+                        role = st.selectbox("Role *", options=["Manager", "Employee"])
+                        l.append(role)
+                    with col2:
+                        department = st.text_input("Department *")
+                        l.append(department)
+                        job_name = st.text_input("Job Title / Role")
+                        supervisor = st.text_input("Supervisor")
+                        employment_type = st.selectbox("Employment Type *", ["Full-time", "Part-time"])
+                        l.append(employment_type)
+                        start_date = st.date_input("Start Date *")
+                        l.append(start_date)
+                        status = st.selectbox("Status *", ["Active", "On Leave", "Inactive", "Resigned"])
+                        l.append(status)
+                        contract_type = st.selectbox("Contract Type *", ["Employee", "Temporary", "Intern"])
+                        l.append(contract_type)
+                        contract_pdf = st.file_uploader("Upload Contract PDF", type=["pdf"])
+                        emergency_phone = st.text_input("Emergency Contact Phone (Optional)")
+                        pwd1 = st.text_input("Password *", type="password", key="pwd1")
+                        l.append(pwd1)
+                        pwd2 = st.text_input("Password *", type="password", key="pwd2")
+                        l.append(pwd2)
+                    submit = st.form_submit_button("Add Employee")
+                
+                    if submit:
+                        if not all(l):
+                            st.error("Please fill out all fields marked with an asterisk (*)")
+                        elif pwd1 != pwd2:
+                            st.error("Passwords Don't match")
+                        elif not check_pwd(pwd1):
+                            st.error("Verification Failed: Your password must be at least 10 characters long and include a mix of uppercase letters, lowercase letters, and numbers.") 
+                        else:
+                            emp_payload = {
+                                "first_name": first_name.title(),
+                                "middle_name": middle_name.title() if middle_name else None,
+                                "last_name": last_name.title(),
+                                "gender": gender, 
+                                "dob": str(dob),
+                                "phone": phone,
+                                "email": email,
+                                "address": address,
+                                "photo": save_upload(photo, "photos"), 
+                                "department": department,
+                                "role": role,
+                                "job_name": job_name,
+                                "password": pwd1,
+                                "supervisor": supervisor if supervisor else None,
+                                "employment_type": employment_type,       
+                                "start_date": str(start_date),
+                                "status": status,
+                                "contract_type": contract_type,
+                                "contract_pdf": save_upload(contract_pdf, "contracts"),
+                                "emergency_phone": emergency_phone if emergency_phone else None,
+                                "company_id": st.session_state.user["company_id"]
+                            }
+                            try:
+                                response = requests.post(API_URL, json=emp_payload, headers=st.session_state.headers)
+                                if response.status_code == 200:
+                                    st.success("Employee Added Successfully!")
+                                    st.balloons()
+                                    st.toast("Success!", icon="✅")
+                                elif response.status_code == 422:
+                                    st.error("Make Sure You Provide a Valid Email And Your Phone have country code: e.g +2126XXXXXXXX")
+                                elif response.status_code == 409:
+                                    st.error("Email Already Used")
+                            except Exception as e:
+                                st.error(f"Error: {e}")
+                    
             with delete:
-                st.image("front.png", width=160)
+
                 try: 
                     result = requests.get(API_URL, headers=st.session_state.headers)
                     if result.status_code == 200:

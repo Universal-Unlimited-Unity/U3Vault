@@ -8,6 +8,7 @@ from create_company.db_manage import company
 from .update_model import UpdateEmpByEmp
 from passlib.context import CryptContext
 from shared.func import check_pwd
+from sqlalchemy.exc import IntegrityError
 eng = db_connect()
 
 
@@ -16,7 +17,7 @@ employees = Table(
     "employees",
     metadata,
     Column("id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-    Column("company_id", UUID(as_uuid=True), ForeignKey("company.id"), nullable=False),
+    Column("company_id", UUID(as_uuid=True), ForeignKey("company.id", ondelete="CASCADE"), nullable=False),
     Column("first_name", String, nullable=False),
     Column("last_name", String, nullable=False),
     Column("middle_name", String, nullable=True),
@@ -69,9 +70,11 @@ def add(emp: Employee) -> Employee:
             company_id=emp.company_id,
             password=emp.password,
             job_name=emp.job_name
-            )  
+            )
         conn.execute(stmt)
         conn.commit()
+    
+    
         return emp
     
 def str_to_uuid(id: str) -> uuid.UUID:
