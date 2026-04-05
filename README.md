@@ -210,6 +210,7 @@ All endpoints require an `Authorization: Bearer <token>` header unless otherwise
 ---
 ## ScreenShots
 Please navigate to the folder `screenshots` to see all screenshots.
+![](Screenshot 2026-04-05 6.28.28 AM.png)
 ## Contributing
 Contributions are welcome! Here's how to get started:
 1. **Fork** the repository
