@@ -273,23 +273,23 @@ All endpoints require an `Authorization: Bearer <token>` header unless otherwise
 
 
 ### Login
-![Login Screen](https://github.com/Universal-Unlimited-Unity/U3Vault/raw/main/docs/screenshots/login.png)
+![Login Screen](https://raw.githubusercontent.com/Universal-Unlimited-Unity/U3Vault/main/docs/screenshots/login.png)
 
 ### Admin Dashboard
-![Admin Dashboard](https://github.com/Universal-Unlimited-Unity/U3Vault/raw/main/docs/screenshots/admin-dashboard.png)
+![Admin Dashboard](https://raw.githubusercontent.com/Universal-Unlimited-Unity/U3Vault/main/docs/screenshots/admin-dashboard.png)
 
 ### Employee Management
-![Employee Management](https://github.com/Universal-Unlimited-Unity/U3Vault/raw/main/docs/screenshots/employee-management.png)
-![Employee Management](https://github.com/Universal-Unlimited-Unity/U3Vault/raw/main/docs/screenshots/employee-management2.png)
-![Employee Management](https://github.com/Universal-Unlimited-Unity/U3Vault/raw/main/docs/screenshots/employee-management3.png)
+![Employee Management](https://raw.githubusercontent.com/Universal-Unlimited-Unity/U3Vault/main/docs/screenshots/employee-management.png)
+![Employee Management](https://raw.githubusercontent.com/Universal-Unlimited-Unity/U3Vault/main/docs/screenshots/employee-management2.png)
+![Employee Management](https://raw.githubusercontent.com/Universal-Unlimited-Unity/U3Vault/main/docs/screenshots/employee-management3.png)
 
 ### Attendance Analytics
-![Attendance Analytics 1](https://github.com/Universal-Unlimited-Unity/U3Vault/raw/main/docs/screenshots/attendance-analytics.png)
-![Attendance Analytics 2](https://github.com/Universal-Unlimited-Unity/U3Vault/raw/main/docs/screenshots/attendance-analytics2.png)
-![Attendance Analytics 3](https://github.com/Universal-Unlimited-Unity/U3Vault/raw/main/docs/screenshots/attendance-analytics3.png)
+![Attendance Analytics 1](https://raw.githubusercontent.com/Universal-Unlimited-Unity/U3Vault/main/docs/screenshots/attendance-analytics.png)
+![Attendance Analytics 2](https://raw.githubusercontent.com/Universal-Unlimited-Unity/U3Vault/main/docs/screenshots/attendance-analytics2.png)
+![Attendance Analytics 3](https://raw.githubusercontent.com/Universal-Unlimited-Unity/U3Vault/main/docs/screenshots/attendance-analytics3.png)
 ### Leave Request Management
-![Leave Requests 1](https://github.com/Universal-Unlimited-Unity/U3Vault/raw/main/docs/screenshots/leave-requests.png)
-![Leave Requests 2](https://github.com/Universal-Unlimited-Unity/U3Vault/raw/main/docs/screenshots/leave-requests2.png)
+![Leave Requests 1](https://raw.githubusercontent.com/Universal-Unlimited-Unity/U3Vault/main/docs/screenshots/leave-requests.png)
+![Leave Requests 2](https://raw.githubusercontent.com/Universal-Unlimited-Unity/U3Vault/main/docs/screenshots/leave-requests2.png)
 
 ---
 
