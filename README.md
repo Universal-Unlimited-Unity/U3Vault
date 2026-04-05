@@ -270,7 +270,7 @@ All endpoints require an `Authorization: Bearer <token>` header unless otherwise
 ---
 
 ## ScreenShots
-![](Screenshot.png)
+![](s1.png)
 ![](Screenshot 2026-04-05 6.30.59 AM.png)
 ![]()
 ![]()
