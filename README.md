@@ -167,7 +167,7 @@ Make sure you have the following installed:
 3. **Start all services**
 
    ```bash
-   docker-compose up --build
+   docker compose up --build
    ```
 
    Docker Compose will spin up three containers:
@@ -182,7 +182,6 @@ Make sure you have the following installed:
    | **Frontend (Streamlit)** | http://localhost:8501 |
    | **Backend API** | http://localhost:8000 |
    | **API Docs (Swagger)** | http://localhost:8000/docs |
-   | **API Docs (ReDoc)** | http://localhost:8000/redoc |
 
 ### Database Initialization
 
@@ -319,12 +318,9 @@ Please make sure your code follows the existing style and that any new API endpo
 
 ---
 
-## License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
 ---
 
 <div align="center">
-  <sub>Built with ❤️ by the Universal Unlimited Unity team</sub>
+  <sub>Built with ❤️ by the Universal Unlimited Unity</sub>
 </div>
