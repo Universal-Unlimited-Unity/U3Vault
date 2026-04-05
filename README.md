@@ -13,7 +13,6 @@
 - [Getting Started](#getting-started)
 - [Configuration](#configuration)
 - [API Endpoints](#api-endpoints)
-- [Screenshots](#screenshots)
 - [Contributing](#contributing)
 
 ---
@@ -266,30 +265,6 @@ All endpoints require an `Authorization: Bearer <token>` header unless otherwise
 | `GET` | `/requests` | Get own leave requests by status (Employee) | ✅ |
 | `GET` | `/requests/AdMan` | Get all leave requests (Admin/Manager) | ✅ |
 | `PATCH` | `/requests/AdMan` | Approve or reject a leave request (Admin/Manager) | ✅ |
-
----
-
-## Screenshots
-
-
-### Login
-![Login Screen](docs/screenshots/login.png)
-
-### Admin Dashboard
-![Admin Dashboard](docs/screenshots/admin-dashboard.png)
-
-### Employee Management
-![Employee Management](docs/screenshots/employee-management.png)
-![Employee Management](docs/screenshots/employee-management2.png)
-![Employee Management](docs/screenshots/employee-management3.png)
-
-### Attendance Analytics
-![Attendance Analytics 1](docs/screenshots/attendance-analytics.png)
-![Attendance Analytics 2](docs/screenshots/attendance-analytics2.png)
-![Attendance Analytics 3](docs/screenshots/attendance-analytics3.png)
-### Leave Request Management
-![Leave Requests 1](docs/screenshots/leave-requests.png)
-![Leave Requests 2](docs/screenshots/leave-requests2.png)
 
 ---
 
