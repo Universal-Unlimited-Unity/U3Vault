@@ -1,4 +1,4 @@
-67# U3Vault
+
 > Many startups lose their data due to poor systems and lack of secure infrastructure — that's exactly why we built U3Vault.
 > **A comprehensive employee management and vault system** — built with FastAPI, Streamlit, and PostgreSQL, featuring JWT authentication, role-based access control, and powerful HR tools.
 ---
