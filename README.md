@@ -71,7 +71,6 @@ Three distinct roles with scoped permissions:
 | **Password Hashing** | passlib (bcrypt) |
 | **Validation** | Pydantic v2, pydantic-extra-types, phonenumbers |
 | **Analytics** | Pandas, Matplotlib, Seaborn |
-| **PDF Generation** | fpdf |
 | **Containerization** | Docker, Docker Compose |
 ---
 ## Project Structure
