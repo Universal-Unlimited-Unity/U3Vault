@@ -137,7 +137,7 @@ Make sure you have the following installed:
 - [Git](https://git-scm.com/)
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
-- [Go](https://go.dev/dl/) *(required for certain tooling)*
+- [Go](https://go.dev/dl/) *(required for auxiliary tooling and scripts)*
 
 ### Installation
 
@@ -217,7 +217,7 @@ All configuration is managed via the `backend/.env` file:
 
 ## API Endpoints
 
-All endpoints require a `Authorization: Bearer <token>` header unless otherwise noted.
+All endpoints require an `Authorization: Bearer <token>` header unless otherwise noted.
 
 ### Authentication — `/auth`
 | Method | Path | Description | Auth Required |
