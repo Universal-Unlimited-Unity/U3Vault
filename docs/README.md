@@ -14,6 +14,7 @@
 - [Configuration](#configuration)
 - [API Endpoints](#api-endpoints)
 - [Contributing](#contributing)
+- [ScreenShots](#ScreenShots)
 
 ---
 
@@ -267,6 +268,16 @@ All endpoints require an `Authorization: Bearer <token>` header unless otherwise
 | `PATCH` | `/requests/AdMan` | Approve or reject a leave request (Admin/Manager) | ✅ |
 
 ---
+
+## ScreenShots
+![](Screenshot 2026-04-05 6.28.28 AM.png)
+![](Screenshot 2026-04-05 6.30.59 AM.png)
+![]()
+![]()
+![]()
+![]()
+![]()
+![]()
 
 ## Contributing
 
